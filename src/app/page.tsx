@@ -40,15 +40,22 @@ export default function Home() {
           <Alert.Content>
             <Alert.Title>Proceed with caution</Alert.Title>
             <Alert.Description>
-              I&apos;ve tried to make this pretty foolproof and the likelihood
-              of unrecoverable things going wrong is extremely low, however
-              it&apos;s never zero. So proceed with care and make sure to grab a
-              backup using <b>Save full flash</b> before flashing your device.
-              <br />
-              <br />
-              Once you start <b>Write flash from file</b> or{' '}
-              <b>Flash English firmware</b>, you should avoid disconnecting your
-              device or closing the tab until the operation is complete.
+              <Stack>
+                <p>
+                  I&apos;ve tried to make this foolproof and while the
+                  likelihood of unrecoverable things going wrong is extremely
+                  low, it&apos;s never zero. So proceed with care and make sure
+                  to grab a backup using <b>Save full flash</b> before flashing
+                  your device.
+                </p>
+                <p>
+                  Once you start <b>Write flash from file</b> or{' '}
+                  <b>Flash English firmware</b>, you should avoid disconnecting
+                  your device or closing the tab until the operation is
+                  complete. Writing a full flash from your backup should always
+                  restore your device to its old state.
+                </p>
+              </Stack>
             </Alert.Description>
           </Alert.Content>
         </Alert.Root>
@@ -68,7 +75,11 @@ export default function Home() {
             </Text>
           </div>
           <Stack gap="4px" as="section">
-            <Button onClick={actions.saveFullFlash} disabled={isRunning}>
+            <Button
+              variant="subtle"
+              onClick={actions.saveFullFlash}
+              disabled={isRunning}
+            >
               Save full flash
             </Button>
             <Stack direction="row" gap="8px">
@@ -76,6 +87,7 @@ export default function Home() {
                 <FileUpload ref={fileInput} />
               </Flex>
               <Button
+                variant="subtle"
                 flexGrow={1}
                 onClick={() => actions.writeFullFlash(getFile)}
                 disabled={isRunning}
@@ -101,11 +113,19 @@ export default function Home() {
             </Text>
           </div>
           <Stack gap="4px" as="section">
-            <Button onClick={actions.flashEnglishFirmware} disabled={isRunning}>
+            <Button
+              variant="subtle"
+              onClick={actions.flashEnglishFirmware}
+              disabled={isRunning}
+            >
               Flash English firmware (3.0.8)
             </Button>
             {process.env.NODE_ENV === 'development' && (
-              <Button onClick={actions.debugSteps2} disabled={isRunning}>
+              <Button
+                variant="subtle"
+                onClick={actions.debugSteps2}
+                disabled={isRunning}
+              >
                 debug
               </Button>
             )}

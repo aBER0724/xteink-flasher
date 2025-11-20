@@ -125,7 +125,7 @@ export default function Steps({ steps }: { steps: StepData[] }) {
                     <Progress.Track>
                       <Progress.Range />
                     </Progress.Track>
-                    <Progress.ValueText style={{ whiteSpace: 'nowrap' }}>
+                    <Progress.ValueText whiteSpace="nowrap">
                       {Math.round(
                         (s.progress.current / s.progress.total) * 100,
                       )}
