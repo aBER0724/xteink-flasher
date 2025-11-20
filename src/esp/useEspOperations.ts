@@ -80,7 +80,7 @@ export function useEspOperations() {
       ),
     );
 
-    await wrapWithStep('Reset device', espController.disconnect);
+    await wrapWithStep('Reset device', () => espController.disconnect());
   };
 
   const saveFullFlash = async () => {
@@ -137,7 +137,7 @@ export function useEspOperations() {
       ),
     );
 
-    await wrapWithStep('Reset device', espController.disconnect);
+    await wrapWithStep('Reset device', () => espController.disconnect());
   };
 
   const debugSteps2 = async () => {
