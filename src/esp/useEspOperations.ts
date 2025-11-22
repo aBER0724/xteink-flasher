@@ -163,7 +163,7 @@ export function useEspOperations() {
     await wrapWithStep('Reset device', () => espController.disconnect());
   };
 
-  const debugSteps2 = async () => {
+  const fakeWriteFullFlash = async () => {
     setStepData([
       { name: 'Read file', status: 'pending' },
       { name: 'Connect to device', status: 'pending' },
@@ -230,7 +230,7 @@ export function useEspOperations() {
       flashChineseFirmware: wrapWithRunning(flashChineseFirmware),
       saveFullFlash: wrapWithRunning(saveFullFlash),
       writeFullFlash: wrapWithRunning(writeFullFlash),
-      debugSteps2: wrapWithRunning(debugSteps2),
+      fakeWriteFullFlash: wrapWithRunning(fakeWriteFullFlash),
     },
   };
 }

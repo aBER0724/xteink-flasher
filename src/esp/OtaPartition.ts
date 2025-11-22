@@ -1,12 +1,12 @@
-import crc32 from 'crc/crc32';
-import { leBytesToU32, u32ToLeBytes } from '@/utils/bytes';
+import { isEqualBytes, leBytesToU32, u32ToLeBytes } from '@/utils/bytes';
+import { generateCrc32Le } from '@/utils/crc';
 import {
   OtaPartitionState,
   otaPartitionStateFromBytes,
   otaPartitionStateToBytes,
-} from './OtaParitionState';
+} from './OtaPartitionState';
 
-interface PartitionStatus {
+export interface OtaPartitionDetails {
   partitionLabel: 'app0' | 'app1';
   sequence: number;
   state: OtaPartitionState;
@@ -14,37 +14,26 @@ interface PartitionStatus {
   crcValid?: boolean;
 }
 
-export function isEqualBytes(bytes1: Uint8Array, bytes2: Uint8Array): boolean {
-  if (bytes1.length !== bytes2.length) {
-    return false;
-  }
-
-  for (let i = 0; i < bytes1.length; i += 1) {
-    if (bytes1[i] !== bytes2[i]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function generateCrc32Le(sequence: number) {
-  const value = crc32(u32ToLeBytes(sequence).buffer, 0xffffffff);
-  return u32ToLeBytes(value);
-}
-
 export default class OtaPartition {
-  constructor(public data: Uint8Array) {}
+  private cachedOtaAppParitions:
+    | [OtaPartitionDetails, OtaPartitionDetails]
+    | null = null;
 
-  parseOtaAppPartitions(): [PartitionStatus, PartitionStatus] {
-    return [
-      this.parseOtaAppPartition('app0'),
-      this.parseOtaAppPartition('app1'),
-    ];
+  constructor(public readonly data: Uint8Array) {}
+
+  otaAppPartitions(): [OtaPartitionDetails, OtaPartitionDetails] {
+    if (!this.cachedOtaAppParitions) {
+      this.cachedOtaAppParitions = [
+        this.parseOtaAppPartition('app0'),
+        this.parseOtaAppPartition('app1'),
+      ];
+    }
+
+    return this.cachedOtaAppParitions;
   }
 
   getCurrentBootPartition() {
-    const partitions = this.parseOtaAppPartitions();
+    const partitions = this.otaAppPartitions();
 
     return partitions
       .filter(
@@ -61,7 +50,7 @@ export default class OtaPartition {
     return 'app1';
   }
 
-  setBootPartition(partitionLabel: PartitionStatus['partitionLabel']) {
+  setBootPartition(partitionLabel: OtaPartitionDetails['partitionLabel']) {
     const currentBootPartition = this.getCurrentBootPartition();
 
     if (currentBootPartition?.partitionLabel === partitionLabel) {
@@ -69,7 +58,7 @@ export default class OtaPartition {
     }
 
     const nextSequence = (currentBootPartition?.sequence ?? 0) + 1;
-    this.setPartitionStatus({
+    this.setOtaPartitionDetails({
       partitionLabel,
       sequence: nextSequence,
       state: OtaPartitionState.NEW,
@@ -78,7 +67,7 @@ export default class OtaPartition {
   }
 
   private parseOtaAppPartition(
-    partitionLabel: PartitionStatus['partitionLabel'],
+    partitionLabel: OtaPartitionDetails['partitionLabel'],
   ) {
     const offset = partitionLabel === 'app1' ? 0x1000 : 0;
 
@@ -97,9 +86,10 @@ export default class OtaPartition {
     };
   }
 
-  private setPartitionStatus(partition: PartitionStatus) {
+  private setOtaPartitionDetails(partition: OtaPartitionDetails) {
     const offset = partition.partitionLabel === 'app1' ? 0x1000 : 0;
 
+    this.cachedOtaAppParitions = null;
     this.data.set(u32ToLeBytes(partition.sequence), offset);
     this.data.set(otaPartitionStateToBytes(partition.state), offset + 0x18);
     this.data.set(generateCrc32Le(partition.sequence), offset + 0x1c);

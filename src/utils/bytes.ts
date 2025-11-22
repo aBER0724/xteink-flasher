@@ -17,3 +17,17 @@ export function leBytesToU32(bytes: Uint8Array) {
     ((bytes.at(3) ?? 0) << 24)
   );
 }
+
+export function isEqualBytes(bytes1: Uint8Array, bytes2: Uint8Array): boolean {
+  if (bytes1.length !== bytes2.length) {
+    return false;
+  }
+
+  for (let i = 0; i < bytes1.length; i += 1) {
+    if (bytes1[i] !== bytes2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
