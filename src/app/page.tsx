@@ -2,7 +2,6 @@
 
 import React, { useRef } from 'react';
 import {
-  Text,
   Button,
   Heading,
   Em,
@@ -47,22 +46,25 @@ export default function Home() {
         </Alert.Content>
       </Alert.Root>
 
-      <Stack gap="10px" as="section">
+      <Stack gap={3} as="section">
         <div>
           <Heading size="xl">Full flash controls</Heading>
-          <Text color="grey" textStyle="sm">
-            These actions will allow you to take a full backup your Xteink
-            device in order to be able to restore it in the case that anything
-            goes wrong.
-            <br />
-            <b>Save full flash</b> will read your device&apos;s flash and save
-            it as <Em>flash.bin</Em>. This will take around 25 minutes to
-            complete. You can use that file (or someone else&apos;s) with{' '}
-            <b>Write full flash from file</b> to overwrite your device&apos;s
-            entire flash.
-          </Text>
+          <Stack gap={1} color="grey" textStyle="sm">
+            <p>
+              These actions will allow you to take a full backup your Xteink
+              device in order to be able to restore it in the case that anything
+              goes wrong.
+            </p>
+            <p>
+              <b>Save full flash</b> will read your device&apos;s flash and save
+              it as <Em>flash.bin</Em>. This will take around 25 minutes to
+              complete. You can use that file (or someone else&apos;s) with{' '}
+              <b>Write full flash from file</b> to overwrite your device&apos;s
+              entire flash.
+            </p>
+          </Stack>
         </div>
-        <Stack gap="4px" as="section">
+        <Stack as="section">
           <Button
             variant="subtle"
             onClick={actions.saveFullFlash}
@@ -70,7 +72,7 @@ export default function Home() {
           >
             Save full flash
           </Button>
-          <Stack direction="row" gap="8px">
+          <Stack direction="row">
             <Flex grow={1}>
               <FileUpload ref={fileInput} />
             </Flex>
@@ -86,22 +88,25 @@ export default function Home() {
         </Stack>
       </Stack>
       <Separator />
-      <Stack gap="10px" as="section">
+      <Stack gap={3} as="section">
         <div>
           <Heading size="xl">OTA fast flash controls</Heading>
-          <Text color="grey" textStyle="sm">
-            Before using this, I&apos;d strongly recommend taking a backup of
-            your device using <b>Save full flash</b> above.
-            <br />
-            <b>Flash English/Chinese firmware</b> will download the firmware,
-            overwrite the backup partition with the new firmware, and swap over
-            to using this partition (leaving your existing firmware as the new
-            backup). This is significantly faster than a full flash write and
-            will retain all your settings. If it goes wrong, it should be fine
-            to run again.
-          </Text>
+          <Stack gap={1} color="grey" textStyle="sm">
+            <p>
+              Before using this, I&apos;d strongly recommend taking a backup of
+              your device using <b>Save full flash</b> above.
+            </p>
+            <p>
+              <b>Flash English/Chinese firmware</b> will download the firmware,
+              overwrite the backup partition with the new firmware, and swap
+              over to using this partition (leaving your existing firmware as
+              the new backup). This is significantly faster than a full flash
+              write and will retain all your settings. If it goes wrong, it
+              should be fine to run again.
+            </p>
+          </Stack>
         </div>
-        <Stack gap="4px" as="section">
+        <Stack as="section">
           <Button
             variant="subtle"
             onClick={actions.flashEnglishFirmware}

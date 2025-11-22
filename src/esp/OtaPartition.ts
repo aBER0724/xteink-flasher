@@ -43,11 +43,12 @@ export default class OtaPartition {
       .sort((a, b) => b.sequence - a.sequence)[0];
   }
 
+  getCurrentBootPartitionLabel() {
+    return this.getCurrentBootPartition()?.partitionLabel ?? 'app0';
+  }
+
   getCurrentBackupPartitionLabel() {
-    if (this.getCurrentBootPartition()?.partitionLabel === 'app1') {
-      return 'app0';
-    }
-    return 'app1';
+    return this.getCurrentBootPartitionLabel() === 'app0' ? 'app1' : 'app0';
   }
 
   setBootPartition(partitionLabel: OtaPartitionDetails['partitionLabel']) {

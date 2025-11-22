@@ -163,6 +163,71 @@ export function useEspOperations() {
     await wrapWithStep('Reset device', () => espController.disconnect());
   };
 
+  const readDebugOtadata = async () => {
+    setStepData([
+      { name: 'Connect to device', status: 'pending' },
+      { name: 'Read otadata partition', status: 'pending' },
+      { name: 'Disconnect from device', status: 'pending' },
+    ]);
+
+    const espController = await wrapWithStep('Connect to device', async () => {
+      const c = await EspController.fromRequestedDevice();
+      await c.connect();
+      return c;
+    });
+
+    const otaPartition = await wrapWithStep('Read otadata partition', () =>
+      espController.readOtadataPartition((_, p, t) =>
+        updateStepData('Read otadata partition', {
+          progress: { current: p, total: t },
+        }),
+      ),
+    );
+
+    await wrapWithStep('Disconnect from device', () =>
+      espController.disconnect({ skipReset: true }),
+    );
+
+    return otaPartition;
+  };
+
+  const swapBootPartition = async () => {
+    setStepData([
+      { name: 'Connect to device', status: 'pending' },
+      { name: 'Read otadata partition', status: 'pending' },
+      { name: 'Flash otadata partition', status: 'pending' },
+      { name: 'Reset device', status: 'pending' },
+    ]);
+
+    const espController = await wrapWithStep('Connect to device', async () => {
+      const c = await EspController.fromRequestedDevice();
+      await c.connect();
+      return c;
+    });
+
+    const otaPartition = await wrapWithStep('Read otadata partition', () =>
+      espController.readOtadataPartition((_, p, t) =>
+        updateStepData('Read otadata partition', {
+          progress: { current: p, total: t },
+        }),
+      ),
+    );
+
+    const backupPartitionLabel = otaPartition.getCurrentBackupPartitionLabel();
+    otaPartition.setBootPartition(backupPartitionLabel);
+    await wrapWithStep('Flash otadata partition', () =>
+      espController.writeOtadataPartition(otaPartition, (_, p, t) =>
+        updateStepData('Flash otadata partition', {
+          progress: { current: p, total: t },
+        }),
+      ),
+    );
+
+    await wrapWithStep('Reset device', () => espController.disconnect());
+
+    return otaPartition;
+  };
+
   const fakeWriteFullFlash = async () => {
     setStepData([
       { name: 'Read file', status: 'pending' },
@@ -231,6 +296,10 @@ export function useEspOperations() {
       saveFullFlash: wrapWithRunning(saveFullFlash),
       writeFullFlash: wrapWithRunning(writeFullFlash),
       fakeWriteFullFlash: wrapWithRunning(fakeWriteFullFlash),
+    },
+    debugActions: {
+      readDebugOtadata: wrapWithRunning(readDebugOtadata),
+      swapBootPartition: wrapWithRunning(swapBootPartition),
     },
   };
 }

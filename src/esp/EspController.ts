@@ -39,6 +39,7 @@ export default class EspController {
 
   async disconnect({ skipReset = false }: { skipReset?: boolean } = {}) {
     await this.espLoader.after(skipReset ? 'no_reset' : 'hard_reset');
+    await this.espLoader.transport.disconnect();
   }
 
   async readFullFlash(
