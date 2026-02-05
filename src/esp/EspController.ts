@@ -1,7 +1,45 @@
 'use client';
 
+import * as crypto from 'crypto';
+
 import { ESPLoader, Transport } from 'esptool-js';
 import OtaPartition from '@/esp/OtaPartition';
+
+const PARTITION_TYPES: Record<number, Record<number, string>> = {
+  // App type
+  0x00: {
+    0x00: 'app-factory',
+    0x10: 'app-ota_0',
+    0x11: 'app-ota_1',
+    0x12: 'app-ota_2',
+    0x13: 'app-ota_3',
+    0x20: 'app-test',
+  },
+  // Data type
+  0x01: {
+    0x00: 'data-ota',
+    0x01: 'data-phy',
+    0x02: 'data-nvs',
+    0x03: 'data-coredump',
+    0x04: 'data-nvs_keys',
+    0x05: 'data-efuse',
+    0x06: 'data-undefined',
+    0x80: 'data-esphttpd',
+    0x81: 'data-fat',
+    0x82: 'data-spiffs',
+    0x83: 'data-littlefs',
+  },
+  // Bootloader type
+  0x02: {
+    0x00: 'bootloader-primary',
+    0x01: 'bootloader-ota',
+  },
+  // Partition table type
+  0x03: {
+    0x00: 'partitiontable-primary',
+    0x01: 'partitiontable-ota',
+  },
+};
 
 export default class EspController {
   static async requestDevice() {
@@ -40,6 +78,48 @@ export default class EspController {
   async disconnect({ skipReset = false }: { skipReset?: boolean } = {}) {
     await this.espLoader.after(skipReset ? 'no_reset' : 'hard_reset');
     await this.espLoader.transport.disconnect();
+  }
+
+  async readPartitionTable() {
+    const partitionData = [];
+
+    const data = await this.espLoader.readFlash(0x8000, 0x2000);
+    const md5 = crypto.createHash('md5');
+    for (let offset = 0; offset < data.length; offset += 32) {
+      const chunk = data.slice(offset, offset + 32);
+      if (
+        chunk.length !== 32 ||
+        Buffer.from(chunk).equals(Buffer.alloc(32, 0xff))
+      )
+        break;
+      if (Buffer.from(chunk.slice(0, 2)).equals(Buffer.from([0xeb, 0xeb]))) {
+        if (Buffer.from(chunk.slice(16)).equals(md5.digest())) {
+          // eslint-disable-next-line no-continue
+          continue;
+        } else {
+          throw new Error("MD5 checksums don't match!");
+        }
+      }
+
+      md5.update(Buffer.from(chunk));
+      partitionData.push({
+        type:
+          PARTITION_TYPES[chunk[2] ?? 0x99]?.[chunk[3] ?? 0x99] ?? 'unknown',
+        /* eslint-disable no-bitwise */
+        offset:
+          (chunk[4] ?? 0) +
+          ((chunk[5] ?? 0) << 8) +
+          ((chunk[6] ?? 0) << 16) +
+          ((chunk[7] ?? 0) << 24),
+        size:
+          (chunk[8] ?? 0) +
+          ((chunk[9] ?? 0) << 8) +
+          ((chunk[10] ?? 0) << 16) +
+          ((chunk[11] ?? 0) << 24),
+        /* eslint-enable no-bitwise */
+      });
+    }
+    return partitionData;
   }
 
   async readFullFlash(

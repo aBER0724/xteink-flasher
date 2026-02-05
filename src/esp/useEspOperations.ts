@@ -16,6 +16,15 @@ import OtaPartition, { OtaPartitionDetails } from './OtaPartition';
 import useStepRunner from './useStepRunner';
 import EspController from './EspController';
 
+const expectedPartitionTable = [
+  { type: 'data-nvs', offset: 36864, size: 20480 },
+  { type: 'data-ota', offset: 57344, size: 8192 },
+  { type: 'app-ota_0', offset: 65536, size: 6553600 },
+  { type: 'app-ota_1', offset: 6619136, size: 6553600 },
+  { type: 'data-spiffs', offset: 13172736, size: 3538944 },
+  { type: 'data-coredump', offset: 16711680, size: 65536 },
+];
+
 export function useEspOperations() {
   const { stepData, initializeSteps, updateStepData, runStep } =
     useStepRunner();
@@ -33,6 +42,7 @@ export function useEspOperations() {
   ) => {
     initializeSteps([
       'Connect to device',
+      'Validate partition table',
       'Download firmware',
       'Read otadata partition',
       'Flash app partition',
@@ -44,6 +54,27 @@ export function useEspOperations() {
       const c = await EspController.fromRequestedDevice();
       await c.connect();
       return c;
+    });
+
+    await runStep('Validate partition table', async () => {
+      const partitionTable = await espController.readPartitionTable();
+      if (
+        partitionTable.length !== expectedPartitionTable.length ||
+        expectedPartitionTable.some(
+          (expected, index) =>
+            partitionTable[index]!.type !== expected.type ||
+            partitionTable[index]!.offset !== expected.offset ||
+            partitionTable[index]!.size !== expected.size,
+        )
+      ) {
+        throw new Error(
+          `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint or official firmware with the default partition table.\nGot ${JSON.stringify(
+            partitionTable,
+            null,
+            2,
+          )}`,
+        );
+      }
     });
 
     const firmwareFile = await runStep('Download firmware', getFirmware);
@@ -100,6 +131,7 @@ export function useEspOperations() {
     initializeSteps([
       'Read file',
       'Connect to device',
+      'Validate partition table',
       'Read otadata partition',
       'Flash app partition',
       'Flash otadata partition',
@@ -118,6 +150,27 @@ export function useEspOperations() {
       const c = await EspController.fromRequestedDevice();
       await c.connect();
       return c;
+    });
+
+    await runStep('Validate partition table', async () => {
+      const partitionTable = await espController.readPartitionTable();
+      if (
+        partitionTable.length !== expectedPartitionTable.length ||
+        expectedPartitionTable.some(
+          (expected, index) =>
+            partitionTable[index]!.type !== expected.type ||
+            partitionTable[index]!.offset !== expected.offset ||
+            partitionTable[index]!.size !== expected.size,
+        )
+      ) {
+        throw new Error(
+          `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint or official firmware with the default partition table.\nGot ${JSON.stringify(
+            partitionTable,
+            null,
+            2,
+          )}`,
+        );
+      }
     });
 
     const [otaPartition, backupPartitionLabel] = await runStep(
