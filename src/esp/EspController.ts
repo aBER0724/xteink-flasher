@@ -5,6 +5,27 @@ import * as crypto from 'crypto';
 import { ESPLoader, Transport } from 'esptool-js';
 import OtaPartition from '@/esp/OtaPartition';
 
+export interface AppPartitionConfig {
+  app0Offset: number;
+  app0Size: number;
+  app1Offset: number;
+  app1Size: number;
+}
+
+export const STANDARD_PARTITION: AppPartitionConfig = {
+  app0Offset: 0x10000,
+  app0Size: 0x640000,
+  app1Offset: 0x650000,
+  app1Size: 0x640000,
+};
+
+export const CJK_PARTITION: AppPartitionConfig = {
+  app0Offset: 0x10000,
+  app0Size: 0x680000,
+  app1Offset: 0x690000,
+  app1Size: 0x680000,
+};
+
 const PARTITION_TYPES: Record<number, Record<number, string>> = {
   // App type
   0x00: {
@@ -174,23 +195,29 @@ export default class EspController {
 
   async readAppPartition(
     partitionLabel: 'app0' | 'app1',
+    config: AppPartitionConfig = STANDARD_PARTITION,
     onPacketReceived?: (
       packet: Uint8Array,
       progress: number,
       totalSize: number,
     ) => void,
   ) {
-    const offset = partitionLabel === 'app0' ? 0x10000 : 0x650000;
-    return this.espLoader.readFlash(offset, 0x640000, onPacketReceived);
+    const offset =
+      partitionLabel === 'app0' ? config.app0Offset : config.app1Offset;
+    const size =
+      partitionLabel === 'app0' ? config.app0Size : config.app1Size;
+    return this.espLoader.readFlash(offset, size, onPacketReceived);
   }
 
   async readAppPartitionForIdentification(
     partitionLabel: 'app0' | 'app1',
     {
+      config = STANDARD_PARTITION,
       readSize = 0x6400, // Default to 25KB (0x6400) for fast identification
       offset = 0,
       onPacketReceived,
     }: {
+      config?: AppPartitionConfig;
       readSize?: number;
       offset?: number;
       onPacketReceived?: (
@@ -206,7 +233,8 @@ export default class EspController {
     // In testing, most firmwares are identified within the first 25KB read, so reading the entire
     // partition is unnecessary in the majority of cases.
 
-    const baseOffset = partitionLabel === 'app0' ? 0x10000 : 0x650000;
+    const baseOffset =
+      partitionLabel === 'app0' ? config.app0Offset : config.app1Offset;
 
     return this.espLoader.readFlash(
       baseOffset + offset,
@@ -218,14 +246,19 @@ export default class EspController {
   async writeAppPartition(
     partitionLabel: 'app0' | 'app1',
     data: Uint8Array,
+    config: AppPartitionConfig = STANDARD_PARTITION,
     reportProgress?: (
       fileIndex: number,
       written: number,
       total: number,
     ) => void,
   ) {
-    if (data.length > 0x640000) {
-      throw new Error(`Data cannot be larger than 0x640000`);
+    const maxSize =
+      partitionLabel === 'app0' ? config.app0Size : config.app1Size;
+    if (data.length > maxSize) {
+      throw new Error(
+        `Data cannot be larger than 0x${maxSize.toString(16)}`,
+      );
     }
     if (data.length < 0xf0000) {
       throw new Error(
@@ -233,7 +266,8 @@ export default class EspController {
       );
     }
 
-    const offset = partitionLabel === 'app0' ? 0x10000 : 0x650000;
+    const offset =
+      partitionLabel === 'app0' ? config.app0Offset : config.app1Offset;
 
     await this.writeData(data, offset, reportProgress);
   }

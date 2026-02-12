@@ -17,6 +17,7 @@ import { useEspOperations } from '@/esp/useEspOperations';
 import {
   getOfficialFirmwareVersions,
   getCommunityFirmwareRemoteData,
+  getCjkFirmwareRemoteData,
 } from '@/remote/firmwareFetcher';
 
 export default function Home() {
@@ -28,6 +29,9 @@ export default function Home() {
   const [communityFirmwareVersions, setCommunityFirmwareVersions] = useState<{
     crossPoint: { version: string; releaseDate: string };
   } | null>(null);
+  const [cjkFirmwareVersions, setCjkFirmwareVersions] = useState<{
+    crossPointCjk: { version: string; releaseDate: string };
+  } | null>(null);
   const fullFlashFileInput = useRef<FileUploadHandle>(null);
   const appPartitionFileInput = useRef<FileUploadHandle>(null);
 
@@ -37,6 +41,8 @@ export default function Home() {
     );
 
     getCommunityFirmwareRemoteData().then(setCommunityFirmwareVersions);
+
+    getCjkFirmwareRemoteData().then(setCjkFirmwareVersions);
   }, []);
 
   return (
@@ -155,6 +161,16 @@ export default function Home() {
             Flash CrossPoint firmware (
             {communityFirmwareVersions?.crossPoint.version}) -{' '}
             {communityFirmwareVersions?.crossPoint.releaseDate}
+          </Button>
+          <Button
+            variant="subtle"
+            onClick={actions.flashCjkFirmware}
+            disabled={isRunning || !cjkFirmwareVersions}
+            loading={!cjkFirmwareVersions}
+          >
+            Flash CrossPoint CJK firmware (
+            {cjkFirmwareVersions?.crossPointCjk.version}) -{' '}
+            {cjkFirmwareVersions?.crossPointCjk.releaseDate}
           </Button>
           <Stack direction="row">
             <Flex grow={1}>
