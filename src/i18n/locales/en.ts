@@ -68,6 +68,7 @@ const en = {
   'step.Read app0 partition': 'Read app0 partition',
   'step.Read app1 partition': 'Read app1 partition',
   'step.Identify firmware types': 'Identify firmware types',
+  'step.Upgrade partition table': 'Upgrade partition table',
 
   // Debug page
   'debug.heading': 'Debug controls',

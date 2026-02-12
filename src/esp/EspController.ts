@@ -62,6 +62,22 @@ const PARTITION_TYPES: Record<number, Record<number, string>> = {
   },
 };
 
+// Reverse mapping: type string -> { type, subtype } bytes for partition table generation
+const REVERSE_PARTITION_TYPES: Record<
+  string,
+  { type: number; subtype: number }
+> = {};
+for (const [typeKey, subtypes] of Object.entries(PARTITION_TYPES)) {
+  for (const [subtypeKey, name] of Object.entries(
+    subtypes as Record<string, string>,
+  )) {
+    REVERSE_PARTITION_TYPES[name] = {
+      type: parseInt(typeKey, 10),
+      subtype: parseInt(subtypeKey, 10),
+    };
+  }
+}
+
 export default class EspController {
   static async requestDevice() {
     if (!('serial' in navigator && navigator.serial)) {
@@ -78,6 +94,72 @@ export default class EspController {
   static async fromRequestedDevice() {
     const device = await this.requestDevice();
     return new EspController(device);
+  }
+
+  /**
+   * Serialize partition table entries into ESP32 binary format (4KB).
+   * Format per entry (32 bytes): magic(2) + type(1) + subtype(1) + offset(4 LE) + size(4 LE) + label(16) + flags(4)
+   * Followed by MD5 record: 0xEB 0xEB + 14*0xFF + 16-byte MD5 digest
+   */
+  static buildPartitionTableBinary(
+    table: Array<{ type: string; offset: number; size: number }>,
+  ): Uint8Array {
+    const PARTITION_TABLE_SIZE = 0x1000; // 4KB
+    const ENTRY_SIZE = 32;
+    const buffer = new Uint8Array(PARTITION_TABLE_SIZE).fill(0xff);
+
+    const md5 = crypto.createHash('md5');
+
+    for (let i = 0; i < table.length; i++) {
+      const entry = table[i]!;
+      const entryOffset = i * ENTRY_SIZE;
+      const entryBuffer = new Uint8Array(ENTRY_SIZE);
+
+      // Magic bytes
+      entryBuffer[0] = 0xaa;
+      entryBuffer[1] = 0x50;
+
+      // Type & Subtype
+      const typeInfo = REVERSE_PARTITION_TYPES[entry.type];
+      if (!typeInfo) {
+        throw new Error(`Unknown partition type: ${entry.type}`);
+      }
+      entryBuffer[2] = typeInfo.type;
+      entryBuffer[3] = typeInfo.subtype;
+
+      /* eslint-disable no-bitwise */
+      // Offset (little-endian u32)
+      entryBuffer[4] = entry.offset & 0xff;
+      entryBuffer[5] = (entry.offset >> 8) & 0xff;
+      entryBuffer[6] = (entry.offset >> 16) & 0xff;
+      entryBuffer[7] = (entry.offset >> 24) & 0xff;
+
+      // Size (little-endian u32)
+      entryBuffer[8] = entry.size & 0xff;
+      entryBuffer[9] = (entry.size >> 8) & 0xff;
+      entryBuffer[10] = (entry.size >> 16) & 0xff;
+      entryBuffer[11] = (entry.size >> 24) & 0xff;
+      /* eslint-enable no-bitwise */
+
+      // Label (16 bytes, null-padded) - extract from type string after first '-'
+      const label = entry.type.split('-').slice(1).join('-');
+      const labelBytes = new TextEncoder().encode(label);
+      entryBuffer.set(labelBytes.slice(0, 16), 12);
+      // Bytes 28-31: flags, all zero (default from Uint8Array init)
+
+      buffer.set(entryBuffer, entryOffset);
+      md5.update(Buffer.from(entryBuffer));
+    }
+
+    // MD5 checksum record after last entry
+    const md5Offset = table.length * ENTRY_SIZE;
+    buffer[md5Offset] = 0xeb;
+    buffer[md5Offset + 1] = 0xeb;
+    // Bytes 2-15 stay 0xFF (already filled)
+    const md5Digest = md5.digest();
+    buffer.set(new Uint8Array(md5Digest), md5Offset + 16);
+
+    return buffer;
   }
 
   private espLoader;
@@ -191,6 +273,17 @@ export default class EspController {
     ) => void,
   ) {
     await this.writeData(partition.data, 0xe000, reportProgress);
+  }
+
+  async writePartitionTable(
+    data: Uint8Array,
+    reportProgress?: (
+      fileIndex: number,
+      written: number,
+      total: number,
+    ) => void,
+  ) {
+    await this.writeData(data, 0x8000, reportProgress);
   }
 
   async readAppPartition(

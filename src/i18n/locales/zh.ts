@@ -69,6 +69,7 @@ const zh: Record<keyof typeof en, string> = {
   'step.Read app0 partition': '读取 app0 分区',
   'step.Read app1 partition': '读取 app1 分区',
   'step.Identify firmware types': '识别固件类型',
+  'step.Upgrade partition table': '升级分区表',
 
   // Debug page
   'debug.heading': '调试控制',

@@ -69,6 +69,7 @@ const ja: Record<keyof typeof en, string> = {
   'step.Read app0 partition': 'app0 パーティションを読み取り',
   'step.Read app1 partition': 'app1 パーティションを読み取り',
   'step.Identify firmware types': 'ファームウェアの種類を識別',
+  'step.Upgrade partition table': 'パーティションテーブルをアップグレード',
 
   // Debug page
   'debug.heading': 'デバッグ制御',

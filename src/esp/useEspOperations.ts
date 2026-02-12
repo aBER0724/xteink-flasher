@@ -48,9 +48,14 @@ const KNOWN_PARTITION_TABLES = [
   },
 ];
 
+interface PartitionTableMatch {
+  name: 'standard' | 'cjk';
+  config: AppPartitionConfig;
+}
+
 function matchPartitionTable(
   partitionTable: Array<{ type: string; offset: number; size: number }>,
-): AppPartitionConfig | null {
+): PartitionTableMatch | null {
   for (const known of KNOWN_PARTITION_TABLES) {
     if (
       partitionTable.length === known.table.length &&
@@ -61,7 +66,7 @@ function matchPartitionTable(
           partitionTable[index]!.size === expected.size,
       )
     ) {
-      return known.config;
+      return { name: known.name, config: known.config };
     }
   }
   return null;
@@ -81,10 +86,12 @@ export function useEspOperations() {
 
   const flashRemoteFirmware = async (
     getFirmware: () => Promise<Uint8Array>,
+    targetPartitionName: 'standard' | 'cjk' = 'standard',
   ) => {
     initializeSteps([
       'Connect to device',
       'Validate partition table',
+      'Upgrade partition table',
       'Download firmware',
       'Read otadata partition',
       'Flash app partition',
@@ -98,12 +105,16 @@ export function useEspOperations() {
       return c;
     });
 
-    const partitionConfig = await runStep(
+    const targetTable = KNOWN_PARTITION_TABLES.find(
+      (t) => t.name === targetPartitionName,
+    )!;
+
+    const needsUpgrade = await runStep(
       'Validate partition table',
       async () => {
         const partitionTable = await espController.readPartitionTable();
-        const config = matchPartitionTable(partitionTable);
-        if (!config) {
+        const match = matchPartitionTable(partitionTable);
+        if (!match) {
           throw new Error(
             `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint, CrossPoint CJK, or official firmware with a known partition table.\nGot ${JSON.stringify(
               partitionTable,
@@ -112,9 +123,21 @@ export function useEspOperations() {
             )}`,
           );
         }
-        return config;
+        return match.name !== targetPartitionName;
       },
     );
+
+    await runStep('Upgrade partition table', async () => {
+      if (!needsUpgrade) return;
+      const partitionBinary = EspController.buildPartitionTableBinary(
+        targetTable.table,
+      );
+      await espController.writePartitionTable(partitionBinary, (_, p, t) =>
+        updateStepData('Upgrade partition table', {
+          progress: { current: p, total: t },
+        }),
+      );
+    });
 
     const firmwareFile = await runStep('Download firmware', getFirmware);
 
@@ -139,7 +162,7 @@ export function useEspOperations() {
       espController.writeAppPartition(
         backupPartitionLabel,
         firmwareFile,
-        partitionConfig,
+        targetTable.config,
         (_, p, t) =>
           updateStepData(flashAppPartitionStepName, {
             progress: { current: p, total: t },
@@ -167,7 +190,7 @@ export function useEspOperations() {
   const flashCrossPointFirmware = async () =>
     flashRemoteFirmware(() => getCommunityFirmware('CrossPoint'));
   const flashCjkFirmware = async () =>
-    flashRemoteFirmware(() => getCjkFirmware());
+    flashRemoteFirmware(() => getCjkFirmware(), 'cjk');
 
   const flashCustomFirmware = async (getFile: () => File | undefined) => {
     initializeSteps([
@@ -198,8 +221,8 @@ export function useEspOperations() {
       'Validate partition table',
       async () => {
         const partitionTable = await espController.readPartitionTable();
-        const config = matchPartitionTable(partitionTable);
-        if (!config) {
+        const match = matchPartitionTable(partitionTable);
+        if (!match) {
           throw new Error(
             `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint, CrossPoint CJK, or official firmware with a known partition table.\nGot ${JSON.stringify(
               partitionTable,
@@ -208,7 +231,7 @@ export function useEspOperations() {
             )}`,
           );
         }
-        return config;
+        return match.config;
       },
     );
 
