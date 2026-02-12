@@ -7,6 +7,7 @@ import {
   Flex,
 } from '@chakra-ui/react';
 import { StepData } from '@/types/Step';
+import { useTranslation } from '@/i18n';
 
 function RunningStepIndicator({ index }: { index: number }) {
   return (
@@ -79,6 +80,8 @@ function StepIndicator({
 }
 
 export default function Steps({ steps }: { steps: StepData[] }) {
+  const { tStep } = useTranslation();
+
   let step = steps.findIndex((s) => s.status !== 'success');
   if (step === -1) {
     step = steps.length;
@@ -93,61 +96,64 @@ export default function Steps({ steps }: { steps: StepData[] }) {
       step={step}
     >
       <ChakraSteps.List flex={1}>
-        {steps.map((s, index) => (
-          <ChakraSteps.Item
-            // eslint-disable-next-line react/no-array-index-key
-            key={index}
-            index={index}
-            title={s.name}
-            width="100%"
-          >
-            <StepIndicator status={s.status} index={index} />
-
-            <Flex
-              direction="column"
-              flexGrow={1}
-              minHeight={index < steps.length - 1 ? '60px' : undefined}
+        {steps.map((s, index) => {
+          const displayName = tStep(s.name);
+          return (
+            <ChakraSteps.Item
+              // eslint-disable-next-line react/no-array-index-key
+              key={index}
+              index={index}
+              title={displayName}
+              width="100%"
             >
-              <ChakraSteps.Title>{s.name}</ChakraSteps.Title>
-              <ChakraSteps.Content
-                index={index}
-                flex={1}
-                marginTop={2}
-                marginBottom={4}
+              <StepIndicator status={s.status} index={index} />
+
+              <Flex
+                direction="column"
+                flexGrow={1}
+                minHeight={index < steps.length - 1 ? '60px' : undefined}
               >
-                {s.progress && (
-                  <Progress.Root
-                    size="sm"
-                    variant="subtle"
-                    value={(s.progress.current / s.progress.total) * 100}
-                    width={150}
-                  >
-                    <Progress.Track>
-                      <Progress.Range />
-                    </Progress.Track>
-                    <Progress.ValueText whiteSpace="nowrap">
-                      {Math.round(
-                        (s.progress.current / s.progress.total) * 100,
-                      )}
-                      % ({s.progress.current.toLocaleString()} /{' '}
-                      {s.progress.total.toLocaleString()})
-                    </Progress.ValueText>
-                  </Progress.Root>
-                )}
-                {s.status === 'failed' && !!s.error && (
-                  <Alert.Root status="error" flexGrow={1}>
-                    <Alert.Indicator />
-                    <Alert.Content>
-                      <Alert.Title>{s.error.name}</Alert.Title>
-                      <Alert.Description>{s.error.message}</Alert.Description>
-                    </Alert.Content>
-                  </Alert.Root>
-                )}
-              </ChakraSteps.Content>
-            </Flex>
-            <ChakraSteps.Separator />
-          </ChakraSteps.Item>
-        ))}
+                <ChakraSteps.Title>{displayName}</ChakraSteps.Title>
+                <ChakraSteps.Content
+                  index={index}
+                  flex={1}
+                  marginTop={2}
+                  marginBottom={4}
+                >
+                  {s.progress && (
+                    <Progress.Root
+                      size="sm"
+                      variant="subtle"
+                      value={(s.progress.current / s.progress.total) * 100}
+                      width={150}
+                    >
+                      <Progress.Track>
+                        <Progress.Range />
+                      </Progress.Track>
+                      <Progress.ValueText whiteSpace="nowrap">
+                        {Math.round(
+                          (s.progress.current / s.progress.total) * 100,
+                        )}
+                        % ({s.progress.current.toLocaleString()} /{' '}
+                        {s.progress.total.toLocaleString()})
+                      </Progress.ValueText>
+                    </Progress.Root>
+                  )}
+                  {s.status === 'failed' && !!s.error && (
+                    <Alert.Root status="error" flexGrow={1}>
+                      <Alert.Indicator />
+                      <Alert.Content>
+                        <Alert.Title>{s.error.name}</Alert.Title>
+                        <Alert.Description>{s.error.message}</Alert.Description>
+                      </Alert.Content>
+                    </Alert.Root>
+                  )}
+                </ChakraSteps.Content>
+              </Flex>
+              <ChakraSteps.Separator />
+            </ChakraSteps.Item>
+          );
+        })}
       </ChakraSteps.List>
     </ChakraSteps.Root>
   );

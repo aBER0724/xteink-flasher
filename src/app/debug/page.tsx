@@ -8,7 +8,6 @@ import {
   Card,
   CloseButton,
   Dialog,
-  Em,
   Flex,
   Heading,
   Mark,
@@ -27,13 +26,15 @@ import HexSpan from '@/components/HexSpan';
 import HexViewer from '@/components/HexViewer';
 import { downloadData } from '@/utils/download';
 import { FirmwareInfo } from '@/utils/firmwareIdentifier';
+import { useTranslation } from '@/i18n';
 
 function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
   const bootPartitionLabel = otaPartition.getCurrentBootPartitionLabel();
+  const { t } = useTranslation();
 
   return (
     <Stack>
-      <Heading size="lg">OTA data</Heading>
+      <Heading size="lg">{t('debug.otaData')}</Heading>
       <Stack direction="row">
         {otaPartition.otaAppPartitions().map((partition) => (
           <Card.Root
@@ -43,13 +44,15 @@ function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
             colorPalette="red"
           >
             <Card.Header>
-              <Heading size="md">Partition {partition.partitionLabel}</Heading>
+              <Heading size="md">
+                {t('debug.partition')} {partition.partitionLabel}
+              </Heading>
             </Card.Header>
             <Card.Body>
               <Table.Root size="sm">
                 <Table.Body>
                   <Table.Row>
-                    <Table.Cell>Boot Partition:</Table.Cell>
+                    <Table.Cell>{t('debug.bootPartition')}</Table.Cell>
                     <Table.Cell>
                       <Mark
                         colorPalette={
@@ -62,17 +65,17 @@ function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
                         paddingRight={1}
                       >
                         {partition.partitionLabel === bootPartitionLabel
-                          ? 'Yes'
-                          : 'No'}
+                          ? t('common.yes')
+                          : t('common.no')}
                       </Mark>
                     </Table.Cell>
                   </Table.Row>
                   <Table.Row>
-                    <Table.Cell>OTA Sequence:</Table.Cell>
+                    <Table.Cell>{t('debug.otaSequence')}</Table.Cell>
                     <Table.Cell>{partition.sequence}</Table.Cell>
                   </Table.Row>
                   <Table.Row>
-                    <Table.Cell>OTA State:</Table.Cell>
+                    <Table.Cell>{t('debug.otaState')}</Table.Cell>
                     <Table.Cell>
                       <Mark
                         colorPalette={
@@ -92,13 +95,13 @@ function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
                     </Table.Cell>
                   </Table.Row>
                   <Table.Row>
-                    <Table.Cell>CRC32 Bytes:</Table.Cell>
+                    <Table.Cell>{t('debug.crc32Bytes')}</Table.Cell>
                     <Table.Cell>
                       <HexSpan data={partition.crcBytes} />
                     </Table.Cell>
                   </Table.Row>
                   <Table.Row>
-                    <Table.Cell>CRC32 Valid:</Table.Cell>
+                    <Table.Cell>{t('debug.crc32Valid')}</Table.Cell>
                     <Table.Cell>
                       <Mark
                         colorPalette={partition.crcValid ? 'green' : 'red'}
@@ -106,7 +109,7 @@ function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
                         paddingLeft={1}
                         paddingRight={1}
                       >
-                        {partition.crcValid ? 'Yes' : 'No'}
+                        {partition.crcValid ? t('common.yes') : t('common.no')}
                       </Mark>
                     </Table.Cell>
                   </Table.Row>
@@ -118,14 +121,14 @@ function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
       </Stack>
       <Dialog.Root size="xl" modal>
         <Dialog.Trigger asChild>
-          <Button variant="outline">View Raw Data</Button>
+          <Button variant="outline">{t('common.viewRawData')}</Button>
         </Dialog.Trigger>
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
             <Dialog.Content>
               <Dialog.Header>
-                <Dialog.Title>Raw Data</Dialog.Title>
+                <Dialog.Title>{t('common.rawData')}</Dialog.Title>
               </Dialog.Header>
               <Dialog.CloseTrigger asChild>
                 <CloseButton size="sm" />
@@ -147,7 +150,7 @@ function OtadataDebug({ otaPartition }: { otaPartition: OtaPartition }) {
           )
         }
       >
-        Download Raw Data
+        {t('common.downloadRawData')}
       </Button>
     </Stack>
   );
@@ -160,19 +163,23 @@ function AppDebug({
   appPartitionData: Uint8Array;
   partitionLabel: OtaPartitionDetails['partitionLabel'];
 }) {
+  const { t } = useTranslation();
+
   return (
     <Stack>
-      <Heading size="lg">App partition data ({partitionLabel})</Heading>
+      <Heading size="lg">
+        {t('debug.appPartitionData')} ({partitionLabel})
+      </Heading>
       <Dialog.Root size="xl" modal>
         <Dialog.Trigger asChild>
-          <Button variant="outline">View Raw Data</Button>
+          <Button variant="outline">{t('common.viewRawData')}</Button>
         </Dialog.Trigger>
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
             <Dialog.Content>
               <Dialog.Header>
-                <Dialog.Title>Raw Data</Dialog.Title>
+                <Dialog.Title>{t('common.rawData')}</Dialog.Title>
               </Dialog.Header>
               <Dialog.CloseTrigger asChild>
                 <CloseButton size="sm" />
@@ -194,7 +201,7 @@ function AppDebug({
           )
         }
       >
-        Download Raw Data
+        {t('common.downloadRawData')}
       </Button>
     </Stack>
   );
@@ -209,6 +216,8 @@ function FirmwareIdentificationDebug({
   app1: FirmwareInfo;
   currentBoot: 'app0' | 'app1';
 }) {
+  const { t } = useTranslation();
+
   const getColorPalette = (
     type: FirmwareInfo['type'],
   ): 'green' | 'orange' | 'blue' | 'gray' => {
@@ -224,9 +233,23 @@ function FirmwareIdentificationDebug({
     }
   };
 
+  const translateFirmwareDisplayName = (info: FirmwareInfo): string => {
+    switch (info.type) {
+      case 'official-english':
+        return t('firmware.officialEnglish');
+      case 'official-chinese':
+        return t('firmware.officialChinese');
+      case 'crosspoint':
+        return t('firmware.crosspoint');
+      case 'unknown':
+      default:
+        return t('firmware.unknown');
+    }
+  };
+
   return (
     <Stack>
-      <Heading size="lg">Firmware Information</Heading>
+      <Heading size="lg">{t('debug.firmwareInfo')}</Heading>
       <SimpleGrid columns={{ sm: 1, md: 2 }} gap={4}>
         {[
           { label: 'app0', info: app0Info },
@@ -240,10 +263,12 @@ function FirmwareIdentificationDebug({
           >
             <Card.Header>
               <Flex alignItems="center" gap={2}>
-                <Heading size="md">Partition {label}</Heading>
+                <Heading size="md">
+                  {t('debug.partition')} {label}
+                </Heading>
                 {label === currentBoot && (
                   <Badge colorPalette="green" variant="solid" size="sm">
-                    Active
+                    {t('common.active')}
                   </Badge>
                 )}
               </Flex>
@@ -251,15 +276,15 @@ function FirmwareIdentificationDebug({
             <Card.Body>
               <Stack gap={2}>
                 <div>
-                  <Text fontWeight="bold">Firmware:</Text>
-                  <Text>{info.displayName}</Text>
+                  <Text fontWeight="bold">{t('debug.firmware')}</Text>
+                  <Text>{translateFirmwareDisplayName(info)}</Text>
                 </div>
                 <div>
-                  <Text fontWeight="bold">Version:</Text>
+                  <Text fontWeight="bold">{t('debug.version')}</Text>
                   <Text>{info.version}</Text>
                 </div>
                 <div>
-                  <Text fontWeight="bold">Type:</Text>
+                  <Text fontWeight="bold">{t('debug.type')}</Text>
                   <Text>{info.type}</Text>
                 </div>
               </Stack>
@@ -271,41 +296,34 @@ function FirmwareIdentificationDebug({
   );
 }
 
+/** Render translated HTML strings (bold, em tags) safely */
+function HtmlText({ html }: { html: string }) {
+  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 export default function Debug() {
   const { debugActions, stepData, isRunning } = useEspOperations();
   const [debugOutputNode, setDebugOutputNode] = useState<ReactNode>(null);
+  const { t } = useTranslation();
 
   return (
     <Flex direction="column" gap="20px">
       <Stack gap={3} as="section">
         <div>
-          <Heading size="xl">Debug controls</Heading>
+          <Heading size="xl">{t('debug.heading')}</Heading>
           <Stack gap={1} color="grey" textStyle="sm">
+            <p>{t('debug.desc')}</p>
             <p>
-              These are few tools to help debugging / administering your Xtink
-              device. They’re designed to be used by those who are intentionally
-              messing around with their device.
+              <HtmlText html={t('debug.readOtadata.desc')} />
             </p>
             <p>
-              <b>Read otadata partition</b> will read the raw data out of the{' '}
-              <Em>otadata</Em> partition and allow you to inspect or download
-              the contents.
+              <HtmlText html={t('debug.readApp.desc')} />
             </p>
             <p>
-              <b>Read app partition</b> will read the raw data out of the
-              selected app partition and allow you to inspect or download the
-              contents.
+              <HtmlText html={t('debug.swapBoot.desc')} />
             </p>
             <p>
-              <b>Swap boot partitions</b> will check the current boot partition
-              (app0 or app1) from <Em>otadata</Em> and rewrite the data in the{' '}
-              <Em>otadata</Em> to switch the boot partition.
-            </p>
-            <p>
-              <b>Identify firmware in both partitions</b> will read both app0
-              and app1 partitions and automatically identify which firmware is
-              installed on each (Official English, Official Chinese, CrossPoint
-              Community, or Custom).
+              <HtmlText html={t('debug.identifyFirmware.desc')} />
             </p>
           </Stack>
         </div>
@@ -321,7 +339,7 @@ export default function Debug() {
             }}
             disabled={isRunning}
           >
-            Read otadata partition
+            {t('debug.readOtadata')}
           </Button>
           <Button
             variant="subtle"
@@ -336,7 +354,7 @@ export default function Debug() {
             }}
             disabled={isRunning}
           >
-            Read app0 partition
+            {t('debug.readApp0')}
           </Button>
           <Button
             variant="subtle"
@@ -351,7 +369,7 @@ export default function Debug() {
             }}
             disabled={isRunning}
           >
-            Read app1 partition
+            {t('debug.readApp1')}
           </Button>
           <Button
             variant="subtle"
@@ -364,7 +382,7 @@ export default function Debug() {
             }}
             disabled={isRunning}
           >
-            Swap boot partitions (app0 / app1)
+            {t('debug.swapBoot')}
           </Button>
           <Button
             variant="subtle"
@@ -383,14 +401,14 @@ export default function Debug() {
             }}
             disabled={isRunning}
           >
-            Identify firmware in both partitions
+            {t('debug.identifyFirmware')}
           </Button>
         </Stack>
       </Stack>
       <Separator />
       <Card.Root variant="subtle">
         <Card.Header>
-          <Heading size="lg">Steps</Heading>
+          <Heading size="lg">{t('common.steps')}</Heading>
         </Card.Header>
         <Card.Body>
           {stepData.length > 0 ? (
@@ -398,9 +416,7 @@ export default function Debug() {
           ) : (
             <Alert.Root status="info" variant="surface">
               <Alert.Indicator />
-              <Alert.Title>
-                Progress will be shown here once you start an operation
-              </Alert.Title>
+              <Alert.Title>{t('common.progressHint')}</Alert.Title>
             </Alert.Root>
           )}
         </Card.Body>

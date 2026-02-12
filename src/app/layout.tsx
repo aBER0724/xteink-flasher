@@ -5,6 +5,7 @@ import { Provider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 import HeaderBar from '@/components/HeaderBar';
 import { Container } from '@chakra-ui/react';
+import { I18nProvider } from '@/i18n';
 
 export const metadata: Metadata = {
   title: 'Xteink Flash Tools',
@@ -20,11 +21,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Provider>
-          <HeaderBar />
-          <Container as="main" maxW="3xl" mt={5} mb={5}>
-            {children}
-          </Container>
-          <Toaster />
+          <I18nProvider>
+            <HeaderBar />
+            <Container as="main" maxW="3xl" mt={5} mb={5}>
+              {children}
+            </Container>
+            <Toaster />
+          </I18nProvider>
         </Provider>
       </body>
     </html>

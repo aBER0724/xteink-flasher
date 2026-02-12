@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Button,
   Heading,
-  Em,
   Separator,
   Card,
   Alert,
@@ -19,9 +18,17 @@ import {
   getCommunityFirmwareRemoteData,
   getCjkFirmwareRemoteData,
 } from '@/remote/firmwareFetcher';
+import { useTranslation } from '@/i18n';
+
+/** Render translated HTML strings (bold, em tags) safely */
+function HtmlText({ html }: { html: string }) {
+  // Only allow <b>, <em> tags - safe for our translation strings
+  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+}
 
 export default function Home() {
   const { actions, stepData, isRunning } = useEspOperations();
+  const { t } = useTranslation();
   const [officialFirmwareVersions, setOfficialFirmwareVersions] = useState<{
     en: string;
     ch: string;
@@ -50,21 +57,14 @@ export default function Home() {
       <Alert.Root status="warning">
         <Alert.Indicator />
         <Alert.Content>
-          <Alert.Title>Proceed with caution</Alert.Title>
+          <Alert.Title>{t('flash.warning.title')}</Alert.Title>
           <Alert.Description>
             <Stack>
               <p>
-                I’ve tried to make this foolproof and while the likelihood of
-                unrecoverable things going wrong is extremely low, it’s never
-                zero. So proceed with care and make sure to grab a backup using{' '}
-                <b>Save full flash</b> before flashing your device.
+                <HtmlText html={t('flash.warning.desc1')} />
               </p>
               <p>
-                Once you start <b>Write flash from file</b> or{' '}
-                <b>Flash English firmware</b>, you should avoid disconnecting
-                your device or closing the tab until the operation is complete.
-                Writing a full flash from your backup should always restore your
-                device to its old state.
+                <HtmlText html={t('flash.warning.desc2')} />
               </p>
             </Stack>
           </Alert.Description>
@@ -73,19 +73,11 @@ export default function Home() {
 
       <Stack gap={3} as="section">
         <div>
-          <Heading size="xl">Full flash controls</Heading>
+          <Heading size="xl">{t('flash.fullFlash.heading')}</Heading>
           <Stack gap={1} color="grey" textStyle="sm">
+            <p>{t('flash.fullFlash.desc1')}</p>
             <p>
-              These actions will allow you to take a full backup your Xteink
-              device in order to be able to restore it in the case that anything
-              goes wrong.
-            </p>
-            <p>
-              <b>Save full flash</b> will read your device’s flash and save it
-              as <Em>flash.bin</Em>. This will take around 25 minutes to
-              complete. You can use that file (or someone else’s) with{' '}
-              <b>Write full flash from file</b> to overwrite your device’s
-              entire flash.
+              <HtmlText html={t('flash.fullFlash.desc2')} />
             </p>
           </Stack>
         </div>
@@ -95,7 +87,7 @@ export default function Home() {
             onClick={actions.saveFullFlash}
             disabled={isRunning}
           >
-            Save full flash
+            {t('flash.saveFullFlash')}
           </Button>
           <Stack direction="row">
             <Flex grow={1}>
@@ -111,7 +103,7 @@ export default function Home() {
               }
               disabled={isRunning}
             >
-              Write full flash from file
+              {t('flash.writeFullFlash')}
             </Button>
           </Stack>
         </Stack>
@@ -119,19 +111,13 @@ export default function Home() {
       <Separator />
       <Stack gap={3} as="section">
         <div>
-          <Heading size="xl">OTA fast flash controls</Heading>
+          <Heading size="xl">{t('flash.otaFlash.heading')}</Heading>
           <Stack gap={1} color="grey" textStyle="sm">
             <p>
-              Before using this, I’d strongly recommend taking a backup of your
-              device using <b>Save full flash</b> above.
+              <HtmlText html={t('flash.otaFlash.desc1')} />
             </p>
             <p>
-              <b>Flash English/Chinese firmware</b> will download the firmware,
-              overwrite the backup partition with the new firmware, and swap
-              over to using this partition (leaving your existing firmware as
-              the new backup). This is significantly faster than a full flash
-              write and will retain all your settings. If it goes wrong, it
-              should be fine to run again.
+              <HtmlText html={t('flash.otaFlash.desc2')} />
             </p>
           </Stack>
         </div>
@@ -142,7 +128,7 @@ export default function Home() {
             disabled={isRunning || !officialFirmwareVersions}
             loading={!officialFirmwareVersions}
           >
-            Flash English firmware ({officialFirmwareVersions?.en ?? '...'})
+            {t('flash.flashEnglish')} ({officialFirmwareVersions?.en ?? '...'})
           </Button>
           <Button
             variant="subtle"
@@ -150,7 +136,7 @@ export default function Home() {
             disabled={isRunning || !officialFirmwareVersions}
             loading={!officialFirmwareVersions}
           >
-            Flash Chinese firmware ({officialFirmwareVersions?.ch ?? '...'})
+            {t('flash.flashChinese')} ({officialFirmwareVersions?.ch ?? '...'})
           </Button>
           <Button
             variant="subtle"
@@ -158,7 +144,7 @@ export default function Home() {
             disabled={isRunning || !communityFirmwareVersions}
             loading={!communityFirmwareVersions}
           >
-            Flash CrossPoint firmware (
+            {t('flash.flashCrossPoint')} (
             {communityFirmwareVersions?.crossPoint.version}) -{' '}
             {communityFirmwareVersions?.crossPoint.releaseDate}
           </Button>
@@ -168,7 +154,7 @@ export default function Home() {
             disabled={isRunning || !cjkFirmwareVersions}
             loading={!cjkFirmwareVersions}
           >
-            Flash CrossPoint CJK firmware (
+            {t('flash.flashCrossPointCjk')} (
             {cjkFirmwareVersions?.crossPointCjk.version}) -{' '}
             {cjkFirmwareVersions?.crossPointCjk.releaseDate}
           </Button>
@@ -186,7 +172,7 @@ export default function Home() {
               }
               disabled={isRunning}
             >
-              Flash firmware from file
+              {t('flash.flashFromFile')}
             </Button>
           </Stack>
           {process.env.NODE_ENV === 'development' && (
@@ -195,7 +181,7 @@ export default function Home() {
               onClick={actions.fakeWriteFullFlash}
               disabled={isRunning}
             >
-              Fake write full flash
+              {t('flash.fakeWrite')}
             </Button>
           )}
         </Stack>
@@ -203,7 +189,7 @@ export default function Home() {
       <Separator />
       <Card.Root variant="subtle">
         <Card.Header>
-          <Heading size="lg">Steps</Heading>
+          <Heading size="lg">{t('common.steps')}</Heading>
         </Card.Header>
         <Card.Body>
           {stepData.length > 0 ? (
@@ -211,9 +197,7 @@ export default function Home() {
           ) : (
             <Alert.Root status="info" variant="surface">
               <Alert.Indicator />
-              <Alert.Title>
-                Progress will be shown here once you start an operation
-              </Alert.Title>
+              <Alert.Title>{t('common.progressHint')}</Alert.Title>
             </Alert.Root>
           )}
         </Card.Body>
@@ -221,26 +205,17 @@ export default function Home() {
       <Alert.Root status="info">
         <Alert.Indicator />
         <Alert.Content>
-          <Alert.Title>Change device language</Alert.Title>
+          <Alert.Title>{t('flash.changeLanguage.title')}</Alert.Title>
           <Alert.Description>
-            Before starting the process, it is recommended to change the device
-            language to English. To do this, select “Settings” icon, then click
-            “OK / Confirm” button and “OK / Confirm” again until English is
-            shown. Otherwise, the language will still be Chinese after flashing
-            and you may not notice changes.
+            {t('flash.changeLanguage.desc')}
           </Alert.Description>
         </Alert.Content>
       </Alert.Root>
       <Alert.Root status="info">
         <Alert.Indicator />
         <Alert.Content>
-          <Alert.Title>Device restart instructions</Alert.Title>
-          <Alert.Description>
-            Once you complete a write operation, you will need to restart your
-            device by pressing and releasing the small “Reset” button near the
-            bottom right, followed quickly by pressing and holding of the main
-            power button for about 3 seconds.
-          </Alert.Description>
+          <Alert.Title>{t('flash.restartDevice.title')}</Alert.Title>
+          <Alert.Description>{t('flash.restartDevice.desc')}</Alert.Description>
         </Alert.Content>
       </Alert.Root>
     </Flex>
