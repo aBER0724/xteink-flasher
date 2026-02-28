@@ -44,3 +44,5 @@ next-env.d.ts
 .eslintcache
 
 .spec-workflow/
+.alma-snapshots
+.serena/

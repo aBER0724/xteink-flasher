@@ -67,16 +67,15 @@ const REVERSE_PARTITION_TYPES: Record<
   string,
   { type: number; subtype: number }
 > = {};
-for (const [typeKey, subtypes] of Object.entries(PARTITION_TYPES)) {
-  for (const [subtypeKey, name] of Object.entries(
-    subtypes as Record<string, string>,
-  )) {
+
+Object.entries(PARTITION_TYPES).forEach(([typeKey, subtypes]) => {
+  Object.entries(subtypes).forEach(([subtypeKey, name]) => {
     REVERSE_PARTITION_TYPES[name] = {
       type: parseInt(typeKey, 10),
       subtype: parseInt(subtypeKey, 10),
     };
-  }
-}
+  });
+});
 
 export default class EspController {
   static async requestDevice() {
@@ -102,7 +101,7 @@ export default class EspController {
    * Followed by MD5 record: 0xEB 0xEB + 14*0xFF + 16-byte MD5 digest
    */
   static buildPartitionTableBinary(
-    table: Array<{ type: string; offset: number; size: number }>,
+    table: { type: string; offset: number; size: number }[],
   ): Uint8Array {
     const PARTITION_TABLE_SIZE = 0x1000; // 4KB
     const ENTRY_SIZE = 32;
@@ -110,9 +109,8 @@ export default class EspController {
 
     const md5 = crypto.createHash('md5');
 
-    for (let i = 0; i < table.length; i++) {
-      const entry = table[i]!;
-      const entryOffset = i * ENTRY_SIZE;
+    table.forEach((entry, index) => {
+      const entryOffset = index * ENTRY_SIZE;
       const entryBuffer = new Uint8Array(ENTRY_SIZE);
 
       // Magic bytes
@@ -149,7 +147,7 @@ export default class EspController {
 
       buffer.set(entryBuffer, entryOffset);
       md5.update(Buffer.from(entryBuffer));
-    }
+    });
 
     // MD5 checksum record after last entry
     const md5Offset = table.length * ENTRY_SIZE;
@@ -286,6 +284,19 @@ export default class EspController {
     await this.writeData(data, 0x8000, reportProgress);
   }
 
+  async eraseRegion(
+    address: number,
+    size: number,
+    reportProgress?: (
+      fileIndex: number,
+      written: number,
+      total: number,
+    ) => void,
+  ) {
+    const emptyData = new Uint8Array(size).fill(0xff);
+    await this.writeData(emptyData, address, reportProgress);
+  }
+
   async readAppPartition(
     partitionLabel: 'app0' | 'app1',
     config: AppPartitionConfig = STANDARD_PARTITION,
@@ -297,8 +308,7 @@ export default class EspController {
   ) {
     const offset =
       partitionLabel === 'app0' ? config.app0Offset : config.app1Offset;
-    const size =
-      partitionLabel === 'app0' ? config.app0Size : config.app1Size;
+    const size = partitionLabel === 'app0' ? config.app0Size : config.app1Size;
     return this.espLoader.readFlash(offset, size, onPacketReceived);
   }
 
@@ -349,13 +359,11 @@ export default class EspController {
     const maxSize =
       partitionLabel === 'app0' ? config.app0Size : config.app1Size;
     if (data.length > maxSize) {
-      throw new Error(
-        `Data cannot be larger than 0x${maxSize.toString(16)}`,
-      );
+      throw new Error(`Data cannot be larger than 0x${maxSize.toString(16)}`);
     }
     if (data.length < 0xf0000) {
       throw new Error(
-        `Data seems too small, are you sure this is the right file?`,
+        'Data seems too small, are you sure this is the right file?',
       );
     }
 

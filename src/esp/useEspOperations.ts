@@ -54,22 +54,22 @@ interface PartitionTableMatch {
 }
 
 function matchPartitionTable(
-  partitionTable: Array<{ type: string; offset: number; size: number }>,
+  partitionTable: { type: string; offset: number; size: number }[],
 ): PartitionTableMatch | null {
-  for (const known of KNOWN_PARTITION_TABLES) {
-    if (
+  const match = KNOWN_PARTITION_TABLES.find(
+    (known) =>
       partitionTable.length === known.table.length &&
-      known.table.every(
-        (expected, index) =>
-          partitionTable[index]!.type === expected.type &&
-          partitionTable[index]!.offset === expected.offset &&
-          partitionTable[index]!.size === expected.size,
-      )
-    ) {
-      return { name: known.name, config: known.config };
-    }
-  }
-  return null;
+      known.table.every((expected, index) => {
+        const actual = partitionTable[index];
+        return (
+          actual?.type === expected.type &&
+          actual?.offset === expected.offset &&
+          actual?.size === expected.size
+        );
+      }),
+  );
+
+  return match ? { name: match.name, config: match.config } : null;
 }
 
 export function useEspOperations() {
@@ -109,23 +109,16 @@ export function useEspOperations() {
       (t) => t.name === targetPartitionName,
     )!;
 
-    const needsUpgrade = await runStep(
-      'Validate partition table',
-      async () => {
-        const partitionTable = await espController.readPartitionTable();
-        const match = matchPartitionTable(partitionTable);
-        if (!match) {
-          throw new Error(
-            `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint, CrossPoint CJK, or official firmware with a known partition table.\nGot ${JSON.stringify(
-              partitionTable,
-              null,
-              2,
-            )}`,
-          );
-        }
-        return match.name !== targetPartitionName;
-      },
-    );
+    const needsUpgrade = await runStep('Validate partition table', async () => {
+      const partitionTable = await espController.readPartitionTable();
+      const match = matchPartitionTable(partitionTable);
+      if (!match) {
+        throw new Error(
+          `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint, CrossPoint CJK, or official firmware with a known partition table.\nGot ${JSON.stringify(partitionTable, null, 2)}`,
+        );
+      }
+      return match.name !== targetPartitionName;
+    });
 
     await runStep('Upgrade partition table', async () => {
       if (!needsUpgrade) return;
@@ -137,6 +130,14 @@ export function useEspOperations() {
           progress: { current: p, total: t },
         }),
       );
+      // Erase the first sector of the target SPIFFS area so firmware
+      // doesn't read stale data from the old layout and crash on boot.
+      const spiffsEntry = targetTable.table.find(
+        (e) => e.type === 'data-spiffs',
+      );
+      if (spiffsEntry) {
+        await espController.eraseRegion(spiffsEntry.offset, 0x1000);
+      }
     });
 
     const firmwareFile = await runStep('Download firmware', getFirmware);
@@ -189,8 +190,10 @@ export function useEspOperations() {
     flashRemoteFirmware(() => getOfficialFirmware('ch'));
   const flashCrossPointFirmware = async () =>
     flashRemoteFirmware(() => getCommunityFirmware('CrossPoint'));
-  const flashCjkFirmware = async () =>
-    flashRemoteFirmware(() => getCjkFirmware(), 'cjk');
+  const flashCjkFirmwareSc = async () =>
+    flashRemoteFirmware(() => getCjkFirmware('sc'), 'cjk');
+  const flashCjkFirmwareTc = async () =>
+    flashRemoteFirmware(() => getCjkFirmware('tc'), 'cjk');
 
   const flashCustomFirmware = async (getFile: () => File | undefined) => {
     initializeSteps([
@@ -224,11 +227,7 @@ export function useEspOperations() {
         const match = matchPartitionTable(partitionTable);
         if (!match) {
           throw new Error(
-            `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint, CrossPoint CJK, or official firmware with a known partition table.\nGot ${JSON.stringify(
-              partitionTable,
-              null,
-              2,
-            )}`,
+            `Unexpected partition configuration. You can only use OTA fast flash controls on devices running CrossPoint, CrossPoint CJK, or official firmware with a known partition table.\nGot ${JSON.stringify(partitionTable, null, 2)}`,
           );
         }
         return match.config;
@@ -590,6 +589,52 @@ export function useEspOperations() {
     };
   };
 
+  const eraseUserData = async () => {
+    initializeSteps([
+      'Connect to device',
+      'Validate partition table',
+      'Erase user data',
+      'Reset device',
+    ]);
+
+    const espController = await runStep('Connect to device', async () => {
+      const c = await EspController.fromRequestedDevice();
+      await c.connect();
+      return c;
+    });
+
+    const spiffsEntry = await runStep('Validate partition table', async () => {
+      const partitionTable = await espController.readPartitionTable();
+      const match = matchPartitionTable(partitionTable);
+      if (!match) {
+        throw new Error(
+          `Unexpected partition configuration.\nGot ${JSON.stringify(partitionTable, null, 2)}`,
+        );
+      }
+      const targetTable = KNOWN_PARTITION_TABLES.find(
+        (t) => t.name === match.name,
+      )!;
+      const spiffs = targetTable.table.find((e) => e.type === 'data-spiffs');
+      if (!spiffs) {
+        throw new Error('SPIFFS partition not found in partition table');
+      }
+      return spiffs;
+    });
+
+    await runStep('Erase user data', () =>
+      espController.eraseRegion(
+        spiffsEntry.offset,
+        spiffsEntry.size,
+        (_, p, t) =>
+          updateStepData('Erase user data', {
+            progress: { current: p, total: t },
+          }),
+      ),
+    );
+
+    await runStep('Reset device', () => espController.disconnect());
+  };
+
   return {
     stepData,
     isRunning,
@@ -597,7 +642,8 @@ export function useEspOperations() {
       flashEnglishFirmware: wrapWithRunning(flashEnglishFirmware),
       flashChineseFirmware: wrapWithRunning(flashChineseFirmware),
       flashCrossPointFirmware: wrapWithRunning(flashCrossPointFirmware),
-      flashCjkFirmware: wrapWithRunning(flashCjkFirmware),
+      flashCjkFirmwareSc: wrapWithRunning(flashCjkFirmwareSc),
+      flashCjkFirmwareTc: wrapWithRunning(flashCjkFirmwareTc),
       flashCustomFirmware: wrapWithRunning(flashCustomFirmware),
       saveFullFlash: wrapWithRunning(saveFullFlash),
       writeFullFlash: wrapWithRunning(writeFullFlash),
@@ -608,6 +654,7 @@ export function useEspOperations() {
       readAppPartition: wrapWithRunning(readAppPartition),
       swapBootPartition: wrapWithRunning(swapBootPartition),
       readAndIdentifyAllFirmware: wrapWithRunning(readAndIdentifyAllFirmware),
+      eraseUserData: wrapWithRunning(eraseUserData),
     },
   };
 }

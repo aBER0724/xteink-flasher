@@ -41,7 +41,10 @@ const en = {
   'flash.flashEnglish': 'Flash English firmware',
   'flash.flashChinese': 'Flash Chinese firmware',
   'flash.flashCrossPoint': 'Flash CrossPoint firmware',
-  'flash.flashCrossPointCjk': 'Flash CrossPoint CJK firmware',
+  'flash.flashCrossPointCjkSc':
+    'Flash CrossPoint CJK firmware (Simplified Chinese)',
+  'flash.flashCrossPointCjkTc':
+    'Flash CrossPoint CJK firmware (Traditional Chinese)',
   'flash.flashFromFile': 'Flash firmware from file',
   'flash.fakeWrite': 'Fake write full flash',
 
@@ -69,6 +72,7 @@ const en = {
   'step.Read app1 partition': 'Read app1 partition',
   'step.Identify firmware types': 'Identify firmware types',
   'step.Upgrade partition table': 'Upgrade partition table',
+  'step.Erase user data': 'Erase user data',
 
   // Debug page
   'debug.heading': 'Debug controls',
@@ -82,11 +86,14 @@ const en = {
     '<b>Swap boot partitions</b> will check the current boot partition (app0 or app1) from <em>otadata</em> and rewrite the data in the <em>otadata</em> to switch the boot partition.',
   'debug.identifyFirmware.desc':
     '<b>Identify firmware in both partitions</b> will read both app0 and app1 partitions and automatically identify which firmware is installed on each (Official English, Official Chinese, CrossPoint Community, or Custom).',
+  'debug.eraseUserData.desc':
+    '<b>Erase user data</b> will erase the SPIFFS partition, removing all user files (ebooks, settings, etc). Use this to recover from a boot loop caused by corrupted or oversized files.',
   'debug.readOtadata': 'Read otadata partition',
   'debug.readApp0': 'Read app0 partition',
   'debug.readApp1': 'Read app1 partition',
   'debug.swapBoot': 'Swap boot partitions (app0 / app1)',
   'debug.identifyFirmware': 'Identify firmware in both partitions',
+  'debug.eraseUserData': 'Erase user data (SPIFFS)',
   'debug.otaData': 'OTA data',
   'debug.partition': 'Partition',
   'debug.bootPartition': 'Boot Partition:',

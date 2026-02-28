@@ -25,7 +25,8 @@ interface CjkFirmwareVersions {
   crossPointCjk: {
     version: string;
     releaseDate: string;
-    downloadUrl: string;
+    downloadUrlSc: string;
+    downloadUrlTc: string;
   };
 }
 
@@ -145,7 +146,7 @@ export async function getCommunityFirmware(_firmware: 'CrossPoint') {
 
 export async function getCjkFirmwareRemoteData(): Promise<CjkFirmwareVersions> {
   const cache = getCache();
-  const cacheKey = 'firmware-versions.cjk.v1';
+  const cacheKey = 'firmware-versions.cjk.v2';
 
   const value = (await cache.get(cacheKey)) as CjkFirmwareVersions | null;
   if (value) {
@@ -156,11 +157,20 @@ export async function getCjkFirmwareRemoteData(): Promise<CjkFirmwareVersions> {
     'https://api.github.com/repos/aBER0724/crosspoint-reader-cjk/releases/latest',
   ).then((resp) => resp.json());
 
-  const firmwareAsset = releaseData.assets.find((asset: any) =>
-    asset.name.endsWith('firmware.bin'),
+  const assets: { name: string; browser_download_url: string }[] =
+    Array.isArray(releaseData.assets) ? releaseData.assets : [];
+
+  const firmwareScAsset = assets.find(
+    (asset) => asset.name === 'firmware-sc.bin',
   );
-  if (!firmwareAsset) {
-    throw new Error('CrossPoint CJK firmware asset not found');
+  const firmwareTcAsset = assets.find(
+    (asset) => asset.name === 'firmware-tc.bin',
+  );
+
+  if (!firmwareScAsset || !firmwareTcAsset) {
+    throw new Error(
+      `CrossPoint CJK firmware assets not found. Expected firmware-sc.bin and firmware-tc.bin, got: ${assets.map((a) => a.name).join(', ')}`,
+    );
   }
 
   const data = {
@@ -169,7 +179,8 @@ export async function getCjkFirmwareRemoteData(): Promise<CjkFirmwareVersions> {
       releaseDate: new Date(releaseData.published_at)
         .toISOString()
         .slice(0, 10),
-      downloadUrl: firmwareAsset.browser_download_url,
+      downloadUrlSc: firmwareScAsset.browser_download_url,
+      downloadUrlTc: firmwareTcAsset.browser_download_url,
     },
   };
 
@@ -180,11 +191,14 @@ export async function getCjkFirmwareRemoteData(): Promise<CjkFirmwareVersions> {
   return data;
 }
 
-export async function getCjkFirmware() {
+export async function getCjkFirmware(variant: 'sc' | 'tc') {
   const releaseData = await getCjkFirmwareRemoteData().then(
     (data) => data.crossPointCjk,
   );
 
-  const response = await fetch(releaseData.downloadUrl);
+  const downloadUrl =
+    variant === 'sc' ? releaseData.downloadUrlSc : releaseData.downloadUrlTc;
+
+  const response = await fetch(downloadUrl);
   return new Uint8Array(await response.arrayBuffer());
 }

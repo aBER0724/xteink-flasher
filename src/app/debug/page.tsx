@@ -298,6 +298,7 @@ function FirmwareIdentificationDebug({
 
 /** Render translated HTML strings (bold, em tags) safely */
 function HtmlText({ html }: { html: string }) {
+  // eslint-disable-next-line react/no-danger
   return <span dangerouslySetInnerHTML={{ __html: html }} />;
 }
 

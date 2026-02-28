@@ -23,6 +23,7 @@ import { useTranslation } from '@/i18n';
 /** Render translated HTML strings (bold, em tags) safely */
 function HtmlText({ html }: { html: string }) {
   // Only allow <b>, <em> tags - safe for our translation strings
+  // eslint-disable-next-line react/no-danger
   return <span dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
@@ -150,11 +151,21 @@ export default function Home() {
           </Button>
           <Button
             variant="subtle"
-            onClick={actions.flashCjkFirmware}
+            onClick={actions.flashCjkFirmwareSc}
             disabled={isRunning || !cjkFirmwareVersions}
             loading={!cjkFirmwareVersions}
           >
-            {t('flash.flashCrossPointCjk')} (
+            {t('flash.flashCrossPointCjkSc')} (
+            {cjkFirmwareVersions?.crossPointCjk.version}) -{' '}
+            {cjkFirmwareVersions?.crossPointCjk.releaseDate}
+          </Button>
+          <Button
+            variant="subtle"
+            onClick={actions.flashCjkFirmwareTc}
+            disabled={isRunning || !cjkFirmwareVersions}
+            loading={!cjkFirmwareVersions}
+          >
+            {t('flash.flashCrossPointCjkTc')} (
             {cjkFirmwareVersions?.crossPointCjk.version}) -{' '}
             {cjkFirmwareVersions?.crossPointCjk.releaseDate}
           </Button>

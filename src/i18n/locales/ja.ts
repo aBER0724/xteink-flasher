@@ -42,7 +42,10 @@ const ja: Record<keyof typeof en, string> = {
   'flash.flashEnglish': '英語ファームウェアを書き込み',
   'flash.flashChinese': '中国語ファームウェアを書き込み',
   'flash.flashCrossPoint': 'CrossPoint ファームウェアを書き込み',
-  'flash.flashCrossPointCjk': 'CrossPoint CJK ファームウェアを書き込み',
+  'flash.flashCrossPointCjkSc':
+    'CrossPoint CJK ファームウェアを書き込み (簡体字)',
+  'flash.flashCrossPointCjkTc':
+    'CrossPoint CJK ファームウェアを書き込み (繁体字)',
   'flash.flashFromFile': 'ファイルからファームウェアを書き込み',
   'flash.fakeWrite': 'フルフラッシュ書き込みをシミュレート',
 
@@ -70,6 +73,7 @@ const ja: Record<keyof typeof en, string> = {
   'step.Read app1 partition': 'app1 パーティションを読み取り',
   'step.Identify firmware types': 'ファームウェアの種類を識別',
   'step.Upgrade partition table': 'パーティションテーブルをアップグレード',
+  'step.Erase user data': 'ユーザーデータを消去',
 
   // Debug page
   'debug.heading': 'デバッグ制御',
@@ -83,11 +87,14 @@ const ja: Record<keyof typeof en, string> = {
     '<b>ブートパーティションを交換</b>は <em>otadata</em> から現在のブートパーティション（app0 または app1）を確認し、データを書き換えてブートパーティションを切り替えます。',
   'debug.identifyFirmware.desc':
     '<b>両パーティションのファームウェアを識別</b>は app0 と app1 パーティションを読み取り、それぞれにインストールされているファームウェアの種類（公式英語版、公式中国語版、CrossPoint コミュニティ版、カスタム）を自動識別します。',
+  'debug.eraseUserData.desc':
+    '<b>ユーザーデータを消去</b>は SPIFFS パーティションを消去し、ユーザーファイル（電子書籍、設定など）をすべて削除します。破損または大きすぎるファイルが原因の起動ループから復旧するために使用します。',
   'debug.readOtadata': 'otadata パーティションを読み取り',
   'debug.readApp0': 'app0 パーティションを読み取り',
   'debug.readApp1': 'app1 パーティションを読み取り',
   'debug.swapBoot': 'ブートパーティションを交換 (app0 / app1)',
   'debug.identifyFirmware': '両パーティションのファームウェアを識別',
+  'debug.eraseUserData': 'ユーザーデータを消去 (SPIFFS)',
   'debug.otaData': 'OTA データ',
   'debug.partition': 'パーティション',
   'debug.bootPartition': 'ブートパーティション：',

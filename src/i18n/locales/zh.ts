@@ -42,7 +42,8 @@ const zh: Record<keyof typeof en, string> = {
   'flash.flashEnglish': '刷写英文固件',
   'flash.flashChinese': '刷写中文固件',
   'flash.flashCrossPoint': '刷写 CrossPoint 固件',
-  'flash.flashCrossPointCjk': '刷写 CrossPoint CJK 固件',
+  'flash.flashCrossPointCjkSc': '刷写 CrossPoint CJK 固件（简体）',
+  'flash.flashCrossPointCjkTc': '刷写 CrossPoint CJK 固件（繁体）',
   'flash.flashFromFile': '从文件刷写固件',
   'flash.fakeWrite': '模拟写入完整闪存',
 
@@ -70,6 +71,7 @@ const zh: Record<keyof typeof en, string> = {
   'step.Read app1 partition': '读取 app1 分区',
   'step.Identify firmware types': '识别固件类型',
   'step.Upgrade partition table': '升级分区表',
+  'step.Erase user data': '清除用户数据',
 
   // Debug page
   'debug.heading': '调试控制',
@@ -83,11 +85,14 @@ const zh: Record<keyof typeof en, string> = {
     '<b>交换启动分区</b>将从 <em>otadata</em> 检查当前启动分区（app0 或 app1），并重写数据以切换启动分区。',
   'debug.identifyFirmware.desc':
     '<b>识别两个分区的固件</b>将读取 app0 和 app1 分区，并自动识别每个分区安装的固件类型（官方英文、官方中文、CrossPoint 社区版或自定义固件）。',
+  'debug.eraseUserData.desc':
+    '<b>清除用户数据</b>将擦除 SPIFFS 分区，移除所有用户文件（电子书、设置等）。用于从损坏或过大的文件导致的启动循环中恢复。',
   'debug.readOtadata': '读取 otadata 分区',
   'debug.readApp0': '读取 app0 分区',
   'debug.readApp1': '读取 app1 分区',
   'debug.swapBoot': '交换启动分区 (app0 / app1)',
   'debug.identifyFirmware': '识别两个分区的固件',
+  'debug.eraseUserData': '清除用户数据（SPIFFS）',
   'debug.otaData': 'OTA 数据',
   'debug.partition': '分区',
   'debug.bootPartition': '启动分区：',
