@@ -11,10 +11,19 @@ const en = {
   'common.rawData': 'Raw Data',
   'common.progressHint':
     'Progress will be shown here once you start an operation',
+  'common.chooseFile': 'Choose file',
+  'common.noFileChosen': 'No file chosen',
+  'common.clearFile': 'Clear selected file',
 
   // Header
   'header.title': 'Xteink Flash Tools',
   'header.github': 'Go to Github repo',
+  'header.intro':
+    'Back up, install, and recover Xteink firmware directly from a supported browser.',
+  'header.theme': 'Website theme',
+  'header.themeLight': 'Light',
+  'header.themeDark': 'Dark',
+  'header.themeSystem': 'System',
 
   // Flash page - Warning
   'flash.warning.title': 'Proceed with caution',
@@ -22,6 +31,9 @@ const en = {
     "I've tried to make this foolproof and while the likelihood of unrecoverable things going wrong is extremely low, it's never zero. So proceed with care and make sure to grab a backup using <b>Save full flash</b> before flashing your device.",
   'flash.warning.desc2':
     'Once you start <b>Write flash from file</b> or <b>Flash English firmware</b>, you should avoid disconnecting your device or closing the tab until the operation is complete. Writing a full flash from your backup should always restore your device to its old state.',
+  'flash.backupEyebrow': 'Recovery backup',
+  'flash.firmwareEyebrow': 'Firmware install',
+  'flash.progressEyebrow': 'Operation status',
 
   // Flash page - Full flash controls
   'flash.fullFlash.heading': 'Full flash controls',
@@ -73,6 +85,9 @@ const en = {
   'step.Identify firmware types': 'Identify firmware types',
   'step.Upgrade partition table': 'Upgrade partition table',
   'step.Erase user data': 'Erase user data',
+  'debug.eyebrow': 'Advanced tools',
+  'debug.progressEyebrow': 'Operation status',
+  'debug.outputEyebrow': 'Inspection result',
 
   // Debug page
   'debug.heading': 'Debug controls',

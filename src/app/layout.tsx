@@ -4,7 +4,7 @@ import './globals.css';
 import { Provider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 import HeaderBar from '@/components/HeaderBar';
-import { Container } from '@chakra-ui/react';
+import SiteFooter from '@/components/SiteFooter';
 import { I18nProvider } from '@/i18n';
 
 export const metadata: Metadata = {
@@ -23,9 +23,8 @@ export default function RootLayout({
         <Provider>
           <I18nProvider>
             <HeaderBar />
-            <Container as="main" maxW="3xl" mt={5} mb={5}>
-              {children}
-            </Container>
+            <main className="app-shell">{children}</main>
+            <SiteFooter />
             <Toaster />
           </I18nProvider>
         </Provider>

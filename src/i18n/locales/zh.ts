@@ -12,10 +12,18 @@ const zh: Record<keyof typeof en, string> = {
   'common.downloadRawData': '下载原始数据',
   'common.rawData': '原始数据',
   'common.progressHint': '开始操作后，进度将显示在此处',
+  'common.chooseFile': '选择文件',
+  'common.noFileChosen': '未选择文件',
+  'common.clearFile': '清除已选文件',
 
   // Header
   'header.title': 'Xteink 刷写工具',
   'header.github': '前往 Github 仓库',
+  'header.intro': '直接在支持的浏览器中备份、安装和恢复 Xteink 固件。',
+  'header.theme': '网页主题',
+  'header.themeLight': '浅色',
+  'header.themeDark': '深色',
+  'header.themeSystem': '跟随系统',
 
   // Flash page - Warning
   'flash.warning.title': '请谨慎操作',
@@ -23,6 +31,9 @@ const zh: Record<keyof typeof en, string> = {
     '我已尽力使此工具安全可靠，虽然发生不可恢复错误的可能性极低，但并非为零。请谨慎操作，并确保在刷写设备前使用<b>保存完整闪存</b>进行备份。',
   'flash.warning.desc2':
     '一旦开始<b>从文件写入闪存</b>或<b>刷写英文固件</b>，请避免断开设备或关闭标签页，直到操作完成。从备份写入完整闪存应始终能恢复设备到之前的状态。',
+  'flash.backupEyebrow': '恢复备份',
+  'flash.firmwareEyebrow': '固件安装',
+  'flash.progressEyebrow': '操作状态',
 
   // Flash page - Full flash controls
   'flash.fullFlash.heading': '完整闪存控制',
@@ -72,6 +83,10 @@ const zh: Record<keyof typeof en, string> = {
   'step.Identify firmware types': '识别固件类型',
   'step.Upgrade partition table': '升级分区表',
   'step.Erase user data': '清除用户数据',
+
+  'debug.eyebrow': '高级工具',
+  'debug.progressEyebrow': '操作状态',
+  'debug.outputEyebrow': '检查结果',
 
   // Debug page
   'debug.heading': '调试控制',

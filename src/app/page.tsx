@@ -1,15 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Button,
-  Heading,
-  Separator,
-  Card,
-  Alert,
-  Stack,
-  Flex,
-} from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
+import { LuTriangleAlert } from 'react-icons/lu';
 import FileUpload, { FileUploadHandle } from '@/components/FileUpload';
 import Steps from '@/components/Steps';
 import { useEspOperations } from '@/esp/useEspOperations';
@@ -47,56 +40,57 @@ export default function Home() {
     getOfficialFirmwareVersions().then((versions) =>
       setOfficialFirmwareVersions(versions),
     );
-
     getCommunityFirmwareRemoteData().then(setCommunityFirmwareVersions);
-
     getCjkFirmwareRemoteData().then(setCjkFirmwareVersions);
   }, []);
 
   return (
-    <Flex direction="column" gap="20px">
-      <Alert.Root status="warning">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>{t('flash.warning.title')}</Alert.Title>
-          <Alert.Description>
-            <Stack>
-              <p>
-                <HtmlText html={t('flash.warning.desc1')} />
-              </p>
-              <p>
-                <HtmlText html={t('flash.warning.desc2')} />
-              </p>
-            </Stack>
-          </Alert.Description>
-        </Alert.Content>
-      </Alert.Root>
-
-      <Stack gap={3} as="section">
+    <div className="page-stack">
+      <section
+        className="notice notice--warning"
+        aria-labelledby="flash-warning-title"
+      >
+        <LuTriangleAlert className="notice__icon" aria-hidden="true" />
         <div>
-          <Heading size="xl">{t('flash.fullFlash.heading')}</Heading>
-          <Stack gap={1} color="grey" textStyle="sm">
+          <h2 id="flash-warning-title" className="notice__title">
+            {t('flash.warning.title')}
+          </h2>
+          <div className="notice__copy">
+            <p>
+              <HtmlText html={t('flash.warning.desc1')} />
+            </p>
+            <p>
+              <HtmlText html={t('flash.warning.desc2')} />
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="operation-card" aria-labelledby="full-flash-heading">
+        <header className="operation-card__header">
+          <p className="section-eyebrow">{t('flash.backupEyebrow')}</p>
+          <h2 id="full-flash-heading" className="section-heading">
+            {t('flash.fullFlash.heading')}
+          </h2>
+          <div className="section-copy">
             <p>{t('flash.fullFlash.desc1')}</p>
             <p>
               <HtmlText html={t('flash.fullFlash.desc2')} />
             </p>
-          </Stack>
-        </div>
-        <Stack as="section">
+          </div>
+        </header>
+        <div className="action-grid">
           <Button
-            variant="subtle"
+            className="action-button action-button--primary"
             onClick={actions.saveFullFlash}
             disabled={isRunning}
           >
             {t('flash.saveFullFlash')}
           </Button>
-          <Stack direction="row">
-            <Flex grow={1}>
-              <FileUpload ref={fullFlashFileInput} />
-            </Flex>
+          <div className="file-action-row">
+            <FileUpload ref={fullFlashFileInput} disabled={isRunning} />
             <Button
-              variant="subtle"
-              flexGrow={1}
+              className="action-button"
               onClick={() =>
                 actions.writeFullFlash(() =>
                   fullFlashFileInput.current?.getFile(),
@@ -106,129 +100,144 @@ export default function Home() {
             >
               {t('flash.writeFullFlash')}
             </Button>
-          </Stack>
-        </Stack>
-      </Stack>
-      <Separator />
-      <Stack gap={3} as="section">
-        <div>
-          <Heading size="xl">{t('flash.otaFlash.heading')}</Heading>
-          <Stack gap={1} color="grey" textStyle="sm">
+          </div>
+        </div>
+      </section>
+
+      <section className="operation-card" aria-labelledby="ota-flash-heading">
+        <header className="operation-card__header">
+          <p className="section-eyebrow">{t('flash.firmwareEyebrow')}</p>
+          <h2 id="ota-flash-heading" className="section-heading">
+            {t('flash.otaFlash.heading')}
+          </h2>
+          <div className="section-copy">
             <p>
               <HtmlText html={t('flash.otaFlash.desc1')} />
             </p>
             <p>
               <HtmlText html={t('flash.otaFlash.desc2')} />
             </p>
-          </Stack>
-        </div>
-        <Stack as="section">
+          </div>
+        </header>
+        <div className="firmware-grid">
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={actions.flashEnglishFirmware}
             disabled={isRunning || !officialFirmwareVersions}
             loading={!officialFirmwareVersions}
           >
-            {t('flash.flashEnglish')} ({officialFirmwareVersions?.en ?? '...'})
+            <span className="firmware-action__label">
+              {t('flash.flashEnglish')}
+            </span>
+            <span className="firmware-action__meta">
+              {officialFirmwareVersions?.en ?? '...'}
+            </span>
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={actions.flashChineseFirmware}
             disabled={isRunning || !officialFirmwareVersions}
             loading={!officialFirmwareVersions}
           >
-            {t('flash.flashChinese')} ({officialFirmwareVersions?.ch ?? '...'})
+            <span className="firmware-action__label">
+              {t('flash.flashChinese')}
+            </span>
+            <span className="firmware-action__meta">
+              {officialFirmwareVersions?.ch ?? '...'}
+            </span>
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={actions.flashCrossPointFirmware}
             disabled={isRunning || !communityFirmwareVersions}
             loading={!communityFirmwareVersions}
           >
-            {t('flash.flashCrossPoint')} (
-            {communityFirmwareVersions?.crossPoint.version}) -{' '}
-            {communityFirmwareVersions?.crossPoint.releaseDate}
+            <span className="firmware-action__label">
+              {t('flash.flashCrossPoint')}
+            </span>
+            <span className="firmware-action__meta">
+              {communityFirmwareVersions?.crossPoint.version ?? '...'} ·{' '}
+              {communityFirmwareVersions?.crossPoint.releaseDate ?? '...'}
+            </span>
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={actions.flashCjkFirmwareSc}
             disabled={isRunning || !cjkFirmwareVersions}
             loading={!cjkFirmwareVersions}
           >
-            {t('flash.flashCrossPointCjkSc')} (
-            {cjkFirmwareVersions?.crossPointCjk.version}) -{' '}
-            {cjkFirmwareVersions?.crossPointCjk.releaseDate}
+            <span className="firmware-action__label">
+              {t('flash.flashCrossPointCjkSc')}
+            </span>
+            <span className="firmware-action__meta">
+              {cjkFirmwareVersions?.crossPointCjk.version ?? '...'} ·{' '}
+              {cjkFirmwareVersions?.crossPointCjk.releaseDate ?? '...'}
+            </span>
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={actions.flashCjkFirmwareTc}
             disabled={isRunning || !cjkFirmwareVersions}
             loading={!cjkFirmwareVersions}
           >
-            {t('flash.flashCrossPointCjkTc')} (
-            {cjkFirmwareVersions?.crossPointCjk.version}) -{' '}
-            {cjkFirmwareVersions?.crossPointCjk.releaseDate}
+            <span className="firmware-action__label">
+              {t('flash.flashCrossPointCjkTc')}
+            </span>
+            <span className="firmware-action__meta">
+              {cjkFirmwareVersions?.crossPointCjk.version ?? '...'} ·{' '}
+              {cjkFirmwareVersions?.crossPointCjk.releaseDate ?? '...'}
+            </span>
           </Button>
-          <Stack direction="row">
-            <Flex grow={1}>
-              <FileUpload ref={appPartitionFileInput} />
-            </Flex>
-            <Button
-              variant="subtle"
-              flexGrow={1}
-              onClick={() =>
-                actions.flashCustomFirmware(() =>
-                  appPartitionFileInput.current?.getFile(),
-                )
-              }
-              disabled={isRunning}
-            >
-              {t('flash.flashFromFile')}
-            </Button>
-          </Stack>
           {process.env.NODE_ENV === 'development' && (
             <Button
-              variant="subtle"
+              className="action-button"
               onClick={actions.fakeWriteFullFlash}
               disabled={isRunning}
             >
               {t('flash.fakeWrite')}
             </Button>
           )}
-        </Stack>
-      </Stack>
-      <Separator />
-      <Card.Root variant="subtle">
-        <Card.Header>
-          <Heading size="lg">{t('common.steps')}</Heading>
-        </Card.Header>
-        <Card.Body>
-          {stepData.length > 0 ? (
-            <Steps steps={stepData} />
-          ) : (
-            <Alert.Root status="info" variant="surface">
-              <Alert.Indicator />
-              <Alert.Title>{t('common.progressHint')}</Alert.Title>
-            </Alert.Root>
-          )}
-        </Card.Body>
-      </Card.Root>
-      <Alert.Root status="info">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>{t('flash.changeLanguage.title')}</Alert.Title>
-          <Alert.Description>
-            {t('flash.changeLanguage.desc')}
-          </Alert.Description>
-        </Alert.Content>
-      </Alert.Root>
-      <Alert.Root status="info">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Title>{t('flash.restartDevice.title')}</Alert.Title>
-          <Alert.Description>{t('flash.restartDevice.desc')}</Alert.Description>
-        </Alert.Content>
-      </Alert.Root>
-    </Flex>
+          <FileUpload ref={appPartitionFileInput} disabled={isRunning} />
+          <Button
+            className="action-button"
+            onClick={() =>
+              actions.flashCustomFirmware(() =>
+                appPartitionFileInput.current?.getFile(),
+              )
+            }
+            disabled={isRunning}
+          >
+            {t('flash.flashFromFile')}
+          </Button>
+        </div>
+      </section>
+
+      <section className="progress-card" aria-labelledby="progress-heading">
+        <header className="progress-card__header">
+          <div>
+            <p className="section-eyebrow">{t('flash.progressEyebrow')}</p>
+            <h2 id="progress-heading" className="section-heading">
+              {t('common.steps')}
+            </h2>
+          </div>
+        </header>
+        {stepData.length > 0 ? (
+          <Steps steps={stepData} />
+        ) : (
+          <p className="progress-card__hint">{t('common.progressHint')}</p>
+        )}
+      </section>
+
+      <div className="info-grid">
+        <section className="info-card">
+          <h2>{t('flash.changeLanguage.title')}</h2>
+          <p>{t('flash.changeLanguage.desc')}</p>
+        </section>
+        <section className="info-card">
+          <h2>{t('flash.restartDevice.title')}</h2>
+          <p>{t('flash.restartDevice.desc')}</p>
+        </section>
+      </div>
+    </div>
   );
 }

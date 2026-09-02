@@ -12,10 +12,19 @@ const ja: Record<keyof typeof en, string> = {
   'common.downloadRawData': '生データをダウンロード',
   'common.rawData': '生データ',
   'common.progressHint': '操作を開始すると、ここに進行状況が表示されます',
+  'common.chooseFile': 'ファイルを選択',
+  'common.noFileChosen': 'ファイルが選択されていません',
+  'common.clearFile': '選択したファイルを解除',
 
   // Header
   'header.title': 'Xteink 書き込みツール',
   'header.github': 'Github リポジトリへ',
+  'header.intro':
+    '対応ブラウザから Xteink ファームウェアのバックアップ、インストール、復元を行えます。',
+  'header.theme': 'サイトテーマ',
+  'header.themeLight': 'ライト',
+  'header.themeDark': 'ダーク',
+  'header.themeSystem': 'システム',
 
   // Flash page - Warning
   'flash.warning.title': '注意して操作してください',
@@ -23,6 +32,9 @@ const ja: Record<keyof typeof en, string> = {
     'このツールは安全に設計されていますが、回復不能なエラーが発生する可能性はゼロではありません。慎重に操作し、デバイスを書き込む前に<b>フルフラッシュを保存</b>でバックアップを取ってください。',
   'flash.warning.desc2':
     '<b>ファイルからフラッシュを書き込み</b>または<b>英語ファームウェアを書き込み</b>を開始したら、操作が完了するまでデバイスを切断したりタブを閉じたりしないでください。バックアップからフルフラッシュを書き込めば、デバイスを以前の状態に復元できます。',
+  'flash.backupEyebrow': '復元用バックアップ',
+  'flash.firmwareEyebrow': 'ファームウェア導入',
+  'flash.progressEyebrow': '操作状況',
 
   // Flash page - Full flash controls
   'flash.fullFlash.heading': 'フルフラッシュ制御',
@@ -74,6 +86,10 @@ const ja: Record<keyof typeof en, string> = {
   'step.Identify firmware types': 'ファームウェアの種類を識別',
   'step.Upgrade partition table': 'パーティションテーブルをアップグレード',
   'step.Erase user data': 'ユーザーデータを消去',
+
+  'debug.eyebrow': '高度なツール',
+  'debug.progressEyebrow': '操作状況',
+  'debug.outputEyebrow': '確認結果',
 
   // Debug page
   'debug.heading': 'デバッグ制御',

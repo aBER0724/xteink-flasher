@@ -2,7 +2,6 @@
 
 import React, { ReactNode, useState } from 'react';
 import {
-  Alert,
   Badge,
   Button,
   Card,
@@ -12,7 +11,6 @@ import {
   Heading,
   Mark,
   Portal,
-  Separator,
   Stack,
   Table,
   Text,
@@ -308,11 +306,14 @@ export default function Debug() {
   const { t } = useTranslation();
 
   return (
-    <Flex direction="column" gap="20px">
-      <Stack gap={3} as="section">
-        <div>
-          <Heading size="xl">{t('debug.heading')}</Heading>
-          <Stack gap={1} color="grey" textStyle="sm">
+    <div className="page-stack">
+      <section className="operation-card" aria-labelledby="debug-heading">
+        <header className="operation-card__header">
+          <p className="section-eyebrow">{t('debug.eyebrow')}</p>
+          <h2 id="debug-heading" className="section-heading">
+            {t('debug.heading')}
+          </h2>
+          <div className="section-copy">
             <p>{t('debug.desc')}</p>
             <p>
               <HtmlText html={t('debug.readOtadata.desc')} />
@@ -326,11 +327,11 @@ export default function Debug() {
             <p>
               <HtmlText html={t('debug.identifyFirmware.desc')} />
             </p>
-          </Stack>
-        </div>
-        <Stack as="section">
+          </div>
+        </header>
+        <div className="debug-action-grid">
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={() => {
               debugActions
                 .readDebugOtadata()
@@ -343,7 +344,7 @@ export default function Debug() {
             {t('debug.readOtadata')}
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={() => {
               debugActions
                 .readAppPartition('app0')
@@ -358,7 +359,7 @@ export default function Debug() {
             {t('debug.readApp0')}
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={() => {
               debugActions
                 .readAppPartition('app1')
@@ -373,7 +374,7 @@ export default function Debug() {
             {t('debug.readApp1')}
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={() => {
               debugActions
                 .swapBootPartition()
@@ -386,7 +387,7 @@ export default function Debug() {
             {t('debug.swapBoot')}
           </Button>
           <Button
-            variant="subtle"
+            className="action-button"
             onClick={() => {
               debugActions
                 .readAndIdentifyAllFirmware()
@@ -404,30 +405,37 @@ export default function Debug() {
           >
             {t('debug.identifyFirmware')}
           </Button>
-        </Stack>
-      </Stack>
-      <Separator />
-      <Card.Root variant="subtle">
-        <Card.Header>
-          <Heading size="lg">{t('common.steps')}</Heading>
-        </Card.Header>
-        <Card.Body>
-          {stepData.length > 0 ? (
-            <Steps steps={stepData} />
-          ) : (
-            <Alert.Root status="info" variant="surface">
-              <Alert.Indicator />
-              <Alert.Title>{t('common.progressHint')}</Alert.Title>
-            </Alert.Root>
-          )}
-        </Card.Body>
-      </Card.Root>
+        </div>
+      </section>
+      <section
+        className="progress-card"
+        aria-labelledby="debug-progress-heading"
+      >
+        <header className="progress-card__header">
+          <div>
+            <p className="section-eyebrow">{t('debug.progressEyebrow')}</p>
+            <h2 id="debug-progress-heading" className="section-heading">
+              {t('common.steps')}
+            </h2>
+          </div>
+        </header>
+        {stepData.length > 0 ? (
+          <Steps steps={stepData} />
+        ) : (
+          <p className="progress-card__hint">{t('common.progressHint')}</p>
+        )}
+      </section>
       {!isRunning && !!debugOutputNode ? (
-        <>
-          <Separator />
+        <section className="output-card" aria-labelledby="debug-output-heading">
+          <header className="operation-card__header">
+            <p className="section-eyebrow">{t('debug.outputEyebrow')}</p>
+            <h2 id="debug-output-heading" className="section-heading">
+              {t('debug.outputEyebrow')}
+            </h2>
+          </header>
           {debugOutputNode}
-        </>
+        </section>
       ) : null}
-    </Flex>
+    </div>
   );
 }
