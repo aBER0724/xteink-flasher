@@ -421,10 +421,16 @@ a {
   opacity: 0.48 !important;
 }
 
-.file-action-row {
+.file-action-row,
+.custom-firmware-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, 0.65fr);
   gap: 8px;
+}
+.custom-firmware-row {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
 }
 
 .file-picker {
@@ -750,7 +756,8 @@ a {
   .info-grid,
   .debug-result-grid,
   .output-actions,
-  .file-action-row {
+  .file-action-row,
+  .custom-firmware-row {
     grid-template-columns: 1fr;
   }
 }

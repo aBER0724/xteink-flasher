@@ -197,6 +197,8 @@ export default function Home() {
               {t('flash.fakeWrite')}
             </Button>
           )}
+        </div>
+        <div className="custom-firmware-row">
           <FileUpload ref={appPartitionFileInput} disabled={isRunning} />
           <Button
             className="action-button"
