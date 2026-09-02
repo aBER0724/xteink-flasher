@@ -11,7 +11,7 @@ export default function SiteFooter() {
     <footer className="site-footer">
       <a
         className="github-link"
-        href="https://github.com/daveallie/xteink-flasher"
+        href="https://github.com/aBER0724/xteink-flasher"
         target="_blank"
         rel="noopener noreferrer"
         aria-label={t('header.github')}
